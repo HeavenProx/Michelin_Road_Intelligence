@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Michelin Road Intelligence</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid #e63312;
+    }
+    header h1 { font-size: 2rem; color: #e63312; }
+    header p  { color: #aaa; margin-top: 0.5rem; }
+
+    .auth-status {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
+      background: #2a2a2a;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .auth-status.connected { border-left: 4px solid #22c55e; }
+    .auth-status.disconnected { border-left: 4px solid #888; }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button:hover  { opacity: 0.85; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .btn-strava   { background: #FC4C02; color: white; }
+    .btn-profile  { background: #3b82f6; color: white; }
+    .btn-reco     { background: #e63312; color: white; }
+    .btn-demo     { background: #6b7280; color: white; }
+    .btn-score    { background: #8b5cf6; color: white; }
+    .btn-logout   { background: #374151; color: #ccc; }
+
+    #output {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 12px;
+      padding: 1.5rem;
+      min-height: 200px;
+    }
+    #output h2 { color: #e63312; margin-bottom: 1rem; font-size: 1.1rem; }
+    #output .loading { color: #aaa; font-style: italic; }
+    #output .error   { color: #f87171; }
+
+    .tire-card {
+      background: #333;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .tire-card h3 { color: #e63312; margin-bottom: 0.5rem; }
+    .match-score  {
+      display: inline-block;
+      background: #e63312;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .explanation  {
+      background: #222;
+      border-left: 3px solid #e63312;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      color: #ddd;
+      line-height: 1.6;
+      margin: 1rem 0;
+    }
+    .scores-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .score-item { font-size: 0.85rem; color: #ccc; }
+    .score-bar  {
+      height: 4px;
+      background: #444;
+      border-radius: 2px;
+      margin-top: 2px;
+    }
+    .score-fill { height: 100%; background: #e63312; border-radius: 2px; }
+
+    .alternatives h3 { color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .alt-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2f2f2f;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+    .profile-item {
+      background: #333;
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .profile-item label { font-size: 0.75rem; color: #888; display: block; }
+    .profile-item span  { font-size: 1.2rem; font-weight: bold; color: #f0f0f0; }
+
+    /* Panneau score pneu */
+    .score-panel {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+    .score-panel input, .score-panel select {
+      background: #333;
+      border: 1px solid #555;
+      color: #f0f0f0;
+      padding: 0.5rem;
+      border-radius: 6px;
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+    .score-panel label { display: block; color: #aaa; font-size: 0.85rem; margin-bottom: 0.25rem; }
+
+    pre { white-space: pre-wrap; word-break: break-all; font-size: 0.8rem; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚴 Michelin Road Intelligence</h1>
+  <p>Recommandation de pneu vélo personnalisée — propulsé par Strava + Open-Meteo</p>
+</header>
+
+<div id="auth-status" class="auth-status disconnected">
+  ⚪ Non connecté à Strava
+</div>
+
+<div class="buttons">
+  <button class="btn-strava"  onclick="connectStrava()">🔗 Connecter Strava</button>
+  <button class="btn-profile" onclick="fetchProfile()">📊 Mon profil</button>
+  <button class="btn-reco"    onclick="fetchRecommend()">🏆 Ma recommandation</button>
+  <button class="btn-demo"    onclick="fetchDemo()">🎭 Démo sans Strava</button>
+  <button class="btn-score"   onclick="toggleScorePanel()">🔧 Score pneu</button>
+  <button class="btn-logout"  onclick="logout()">🚪 Déconnexion</button>
+</div>
+
+<!-- Panneau calcul d'usure pneu -->
+<div id="score-panel" class="score-panel" style="display:none; margin-bottom:1rem;">
+  <h3 style="margin-bottom:1rem; color:#8b5cf6;">Estimation d'usure de mon pneu</h3>
+  <label>Pneu installé</label>
+  <select id="tire-select">
+    <option value="power-road">Power Road</option>
+    <option value="power-road-tlr">Power Road TLR</option>
+    <option value="power-all-season-pro">Power All Season Pro</option>
+    <option value="power-cup-2">Power Cup 2</option>
+    <option value="power-endurance-2">Power Endurance 2</option>
+    <option value="pilot-sport">Pilot Sport</option>
+    <option value="country-gravel">Country Gravel</option>
+    <option value="wild-xc">Wild XC</option>
+  </select>
+  <label>Date d'installation</label>
+  <input type="date" id="install-date" />
+  <label>Kilométrage actuel (optionnel — sinon calculé depuis Strava)</label>
+  <input type="number" id="mileage-override" placeholder="ex: 1250" />
+  <button class="btn-score" onclick="fetchTyreScore()">Calculer l'usure</button>
+</div>
+
+<div id="output">
+  <p class="loading">Cliquez sur un bouton pour commencer...</p>
+</div>
+
+<script>
+const API = 'http://localhost:3001';
+
+// ── Auth status ────────────────────────────────────────────────────────────
+async function checkAuthStatus() {
+  try {
+    const r = await fetch(`${API}/auth/status`, { credentials: 'include' });
+    const data = await r.json();
+    const el = document.getElementById('auth-status');
+    if (data.connected) {
+      el.className = 'auth-status connected';
+      el.textContent = `✅ Connecté en tant que ${data.athlete.firstname} ${data.athlete.lastname} (${data.athlete.city || ''})`;
+    } else {
+      el.className = 'auth-status disconnected';
+      el.textContent = '⚪ Non connecté à Strava';
+    }
+  } catch {
+    // Serveur pas encore démarré, silencieux
+  }
+}
+
+// ── Actions ────────────────────────────────────────────────────────────────
+function connectStrava() {
+  window.location.href = `${API}/auth/strava`;
+}
+
+async function logout() {
+  await fetch(`${API}/auth/logout`, { credentials: 'include' });
+  checkAuthStatus();
+  setOutput('<p class="loading">Déconnecté.</p>');
+}
+
+async function fetchProfile() {
+  setLoading('Récupération de ton profil Strava...');
+  try {
+    const data = await apiFetch('/api/profile');
+    renderProfile(data);
+  } catch(e) { setError(e.message); }
+}
+
+async function fetchRecommend() {
+  setLoading('Analyse de tes activités + calcul de la recommandation...');
+  try {
+    const data = await apiFetch('/api/recommend');
+    renderRecommendation(data);
+  } catch(e) { setError(e.message); }
+}
+
+async function fetchDemo() {
+  setLoading('Chargement de la démo...');
+  try {
+    const data = await apiFetch('/api/demo');
+    renderRecommendation(data, true);
+  } catch(e) { setError(e.message); }
+}
+
+function toggleScorePanel() {
+  const panel = document.getElementById('score-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function fetchTyreScore() {
+  const tireId    = document.getElementById('tire-select').value;
+  const installDate = document.getElementById('install-date').value;
+  const mileage   = document.getElementById('mileage-override').value;
+
+  if (!installDate) { alert('Veuillez saisir une date d\'installation'); return; }
+
+  setLoading('Calcul de l\'usure...');
+  try {
+    const body = { tire_id: tireId, install_date: installDate };
+    if (mileage) body.current_mileage_override = Number(mileage);
+
+    const r = await fetch(`${API}/api/tyre-score`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message);
+    renderTyreScore(data);
+  } catch(e) { setError(e.message); }
+}
+
+// ── Helpers fetch ──────────────────────────────────────────────────────────
+async function apiFetch(path) {
+  const r = await fetch(`${API}${path}`, { credentials: 'include' });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.message || 'Erreur serveur');
+  return data;
+}
+
+// ── Renderers ──────────────────────────────────────────────────────────────
+function renderProfile(data) {
+  const p = data.profile;
+  document.getElementById('output').innerHTML = `
+    <h2>📊 Profil de ${data.athlete?.firstname || 'cycliste'}</h2>
+    <div class="profile-grid">
+      <div class="profile-item"><label>Sorties analysées</label><span>${p.ride_count}</span></div>
+      <div class="profile-item"><label>Distance totale</label><span>${p.total_distance_km} km</span></div>
+      <div class="profile-item"><label>Km/mois</label><span>${p.monthly_distance} km</span></div>
+      <div class="profile-item"><label>Vitesse moyenne</label><span>${p.avg_speed_kmh} km/h</span></div>
+      <div class="profile-item"><label>D+ moyen/sortie</label><span>${p.avg_elevation_m} m</span></div>
+      <div class="profile-item"><label>Terrain</label><span>${p.terrain_label}</span></div>
+      <div class="profile-item"><label>Style</label><span>${p.style_label}</span></div>
+      <div class="profile-item"><label>% sorties sous la pluie</label><span>${p.weather_exposure.rain_percentage}%</span></div>
+      <div class="profile-item"><label>Région</label><span>${p.region}</span></div>
+    </div>
+  `;
+}
+
+function renderRecommendation(data, isDemo = false) {
+  const t = data.recommended;
+  const scoreBar = (v) => `<div class="score-bar"><div class="score-fill" style="width:${v/5*100}%"></div></div>`;
+
+  document.getElementById('output').innerHTML = `
+    ${isDemo ? '<p style="color:#888;font-size:0.85rem;margin-bottom:1rem;">🎭 MODE DÉMO — Données fictives d\'Alex Dupont, cycliste parisien</p>' : ''}
+    <h2>🏆 Recommandation pour ${data.athlete?.firstname || 'toi'}</h2>
+
+    <div class="explanation">${data.explanation}</div>
+
+    <div class="tire-card">
+      <span class="match-score">${t.match_score}% de compatibilité</span>
+      <h3>${t.name}</h3>
+      <p style="color:#bbb; font-size:0.9rem; margin-bottom:0.5rem;">${t.description}</p>
+      <p style="font-size:0.85rem; color:#888;">Durée de vie : ~${t.lifetime_km.toLocaleString()} km | Prix : ${t.price_range}</p>
+      <div class="scores-grid">
+        <div class="score-item">Adhérence pluie ${scoreBar(t.scores.wet_grip)}</div>
+        <div class="score-item">Résistance roulement ${scoreBar(t.scores.rolling_resistance)}</div>
+        <div class="score-item">Durabilité ${scoreBar(t.scores.durability)}</div>
+        <div class="score-item">Polyvalence ${scoreBar(t.scores.terrain_versatility)}</div>
+      </div>
+    </div>
+
+    <div class="alternatives">
+      <h3>Alternatives</h3>
+      ${data.alternatives.map(a => `
+        <div class="alt-card">
+          <span>${a.name}</span>
+          <span style="color:#e63312;font-weight:bold;">${a.match_score}%</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderTyreScore(data) {
+  const w = data.wear;
+  const color = w.alert_level === 'replace' ? '#ef4444' : w.alert_level === 'warning' ? '#f59e0b' : '#22c55e';
+  document.getElementById('output').innerHTML = `
+    <h2>🔧 Usure du ${data.tire.name}</h2>
+    <div class="tire-card">
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:2rem; font-weight:bold; color:${color};">${w.wear_percentage}%</div>
+        <div style="color:#888;font-size:0.85rem;">d'usure</div>
+      </div>
+      <div class="score-bar" style="height:12px; margin-bottom:1rem;">
+        <div class="score-fill" style="width:${w.wear_percentage}%; background:${color};"></div>
+      </div>
+      <p style="margin-bottom:0.5rem; color:#ccc;">${w.recommendation_message}</p>
+      <p style="color:#888; font-size:0.85rem;">Kilométrage parcouru : ${w.current_mileage_km.toLocaleString()} km | Reste estimé : ${w.estimated_remaining_km.toLocaleString()} km</p>
+    </div>
+  `;
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function setLoading(msg) {
+  document.getElementById('output').innerHTML = `<p class="loading">⏳ ${msg}</p>`;
+}
+function setError(msg) {
+  document.getElementById('output').innerHTML = `<p class="error">❌ ${msg}</p>`;
+}
+function setOutput(html) {
+  document.getElementById('output').innerHTML = html;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+// Vérification OAuth callback (après retour de Strava)
+const params = new URLSearchParams(window.location.search);
+if (params.get('auth') === 'success') {
+  history.replaceState({}, '', '/');
+  checkAuthStatus();
+  fetchRecommend(); // on lance direct la reco après connexion
+} else if (params.get('auth') === 'denied' || params.get('auth') === 'error') {
+  setError('Connexion Strava échouée ou refusée.');
+  history.replaceState({}, '', '/');
+}
+
+checkAuthStatus();
+</script>
+</body>
+</html>
