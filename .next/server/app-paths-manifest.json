@@ -1,0 +1,7 @@
+{
+  "/api/auth/status/route": "app/api/auth/status/route.js",
+  "/api/auth/strava/route": "app/api/auth/strava/route.js",
+  "/api/recommend/route": "app/api/recommend/route.js",
+  "/api/demo/route": "app/api/demo/route.js",
+  "/page": "app/page.js"
+}

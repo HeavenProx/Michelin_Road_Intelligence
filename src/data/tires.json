@@ -1,0 +1,189 @@
+{
+  "tires": [
+    {
+      "id": "power-road",
+      "name": "Power Road",
+      "full_name": "Michelin Power Road",
+      "category": "route",
+      "description": "Le pneu route polyvalent haute performance de Michelin. Idéal pour les cyclistes réguliers cherchant performance et confort sur route sèche.",
+      "price_range": "€€",
+      "lifetime_km": 3000,
+      "scores": {
+        "wet_grip": 3,
+        "rolling_resistance": 4,
+        "durability": 3,
+        "terrain_versatility": 3
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly"],
+        "styles": ["tempo", "racing"],
+        "conditions": ["dry", "mixed"]
+      },
+      "tags": ["route", "polyvalent", "performance"]
+    },
+    {
+      "id": "power-road-tlr",
+      "name": "Power Road TLR",
+      "full_name": "Michelin Power Road TLR",
+      "category": "route-tubeless",
+      "description": "Version tubeless du Power Road. Moins de crevaisons, meilleure absorption des vibrations, pression plus basse possible. Le meilleur choix pour rouler souvent.",
+      "price_range": "€€€",
+      "lifetime_km": 3500,
+      "scores": {
+        "wet_grip": 4,
+        "rolling_resistance": 4,
+        "durability": 4,
+        "terrain_versatility": 4
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly", "mountain"],
+        "styles": ["endurance", "tempo", "racing"],
+        "conditions": ["dry", "mixed", "wet"]
+      },
+      "tags": ["tubeless", "polyvalent", "confort", "anti-crevaison"]
+    },
+    {
+      "id": "power-all-season-pro",
+      "name": "Power All Season Pro",
+      "full_name": "Michelin Power All Season Pro",
+      "category": "route-quatre-saisons",
+      "description": "Conçu pour rouler par tous les temps. Gomme spéciale pluie, crampons latéraux discrets pour l'humide. Le choix du cycliste qui ne s'arrête pas quand il pleut.",
+      "price_range": "€€€",
+      "lifetime_km": 4500,
+      "scores": {
+        "wet_grip": 5,
+        "rolling_resistance": 3,
+        "durability": 5,
+        "terrain_versatility": 4
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly"],
+        "styles": ["endurance", "tempo"],
+        "conditions": ["wet", "mixed", "winter"]
+      },
+      "tags": ["pluie", "hiver", "4-saisons", "sécurité", "polyvalent"]
+    },
+    {
+      "id": "power-cup-2",
+      "name": "Power Cup 2",
+      "full_name": "Michelin Power Cup 2",
+      "category": "competition",
+      "description": "Pneu de compétition pur. Résistance au roulement minimale, adhérence maximale sur bitume sec. Pour les courses et les cyclistes racing qui veulent le meilleur chrono.",
+      "price_range": "€€€€",
+      "lifetime_km": 2000,
+      "scores": {
+        "wet_grip": 2,
+        "rolling_resistance": 5,
+        "durability": 2,
+        "terrain_versatility": 2
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly"],
+        "styles": ["racing"],
+        "conditions": ["dry"]
+      },
+      "tags": ["compétition", "racing", "chronométrage", "sec"]
+    },
+    {
+      "id": "power-endurance-2",
+      "name": "Power Endurance 2",
+      "full_name": "Michelin Power Endurance 2",
+      "category": "route-endurance",
+      "description": "Taillé pour les longues distances. Durée de vie exceptionnelle, confort optimisé pour les sorties de 3h+. Idéal pour les cyclotouristes et les adeptes du fondeur.",
+      "price_range": "€€",
+      "lifetime_km": 5000,
+      "scores": {
+        "wet_grip": 3,
+        "rolling_resistance": 3,
+        "durability": 5,
+        "terrain_versatility": 3
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly"],
+        "styles": ["endurance"],
+        "conditions": ["dry", "mixed"]
+      },
+      "tags": ["longue-distance", "endurance", "durabilité", "confort"]
+    },
+    {
+      "id": "pilot-sport",
+      "name": "Pilot Sport",
+      "full_name": "Michelin Pilot Sport",
+      "category": "route-premium",
+      "description": "Le pneu premium polyvalent de la gamme Michelin. Performances élevées dans toutes les conditions, longue durée de vie. Le pneu 'défaut' idéal pour ne pas se tromper.",
+      "price_range": "€€€",
+      "lifetime_km": 4000,
+      "scores": {
+        "wet_grip": 4,
+        "rolling_resistance": 4,
+        "durability": 4,
+        "terrain_versatility": 4
+      },
+      "best_for": {
+        "terrains": ["flat", "hilly", "mountain"],
+        "styles": ["endurance", "tempo"],
+        "conditions": ["dry", "mixed", "wet"]
+      },
+      "tags": ["premium", "polyvalent", "équilibré", "route"]
+    },
+    {
+      "id": "country-gravel",
+      "name": "Country Gravel",
+      "full_name": "Michelin Country Gravel",
+      "category": "gravel",
+      "description": "Pour les routes non goudronnées et les chemins forestiers. Crampons fins pour le gravel, roulant sur bitume, adhérent sur terre. Le pneu de l'aventurier.",
+      "price_range": "€€",
+      "lifetime_km": 3500,
+      "scores": {
+        "wet_grip": 4,
+        "rolling_resistance": 3,
+        "durability": 4,
+        "terrain_versatility": 5
+      },
+      "best_for": {
+        "terrains": ["hilly", "mountain"],
+        "styles": ["endurance"],
+        "conditions": ["dry", "mixed", "wet"]
+      },
+      "tags": ["gravel", "mixte", "aventure", "tout-chemin"]
+    },
+    {
+      "id": "wild-xc",
+      "name": "Wild XC",
+      "full_name": "Michelin Wild XC",
+      "category": "vtt",
+      "description": "Pneu VTT cross-country. Crampons agressifs pour le tout terrain, légèreté pour la montée, accroche pour la descente. Conçu pour les chemins techniques.",
+      "price_range": "€€€",
+      "lifetime_km": 2500,
+      "scores": {
+        "wet_grip": 5,
+        "rolling_resistance": 2,
+        "durability": 3,
+        "terrain_versatility": 5
+      },
+      "best_for": {
+        "terrains": ["mountain"],
+        "styles": ["endurance"],
+        "conditions": ["dry", "mixed", "wet", "mud"]
+      },
+      "tags": ["vtt", "montagne", "tout-terrain", "technique"]
+    }
+  ],
+
+  "recommendation_rules": {
+    "terrain_weights": {
+      "mountain": { "terrain_versatility": 0.3, "wet_grip": 0.2, "rolling_resistance": 0.2, "durability": 0.3 },
+      "hilly":    { "terrain_versatility": 0.2, "wet_grip": 0.2, "rolling_resistance": 0.3, "durability": 0.3 },
+      "flat":     { "terrain_versatility": 0.1, "wet_grip": 0.15, "rolling_resistance": 0.45, "durability": 0.3 }
+    },
+    "style_weights": {
+      "racing":    { "rolling_resistance": 0.5, "wet_grip": 0.2, "terrain_versatility": 0.1, "durability": 0.2 },
+      "tempo":     { "rolling_resistance": 0.35, "wet_grip": 0.25, "terrain_versatility": 0.2, "durability": 0.2 },
+      "endurance": { "rolling_resistance": 0.2, "wet_grip": 0.2, "terrain_versatility": 0.2, "durability": 0.4 }
+    },
+    "weather_bonus": {
+      "rain_threshold_pct": 20,
+      "wet_grip_bonus": 1.5
+    }
+  }
+}
