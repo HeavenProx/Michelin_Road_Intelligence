@@ -17,7 +17,7 @@ export class ProfileSnapshot {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: User;
 
