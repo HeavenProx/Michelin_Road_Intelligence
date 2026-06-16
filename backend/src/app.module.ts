@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileSnapshot } from './profile/profile-snapshot.entity';
+import { RecommendModule } from './recommend/recommend.module';
 import { StravaModule } from './strava/strava.module';
 import { TyreModel } from './tyres/tyre-model.entity';
 import { TyreSize } from './tyres/tyre-size.entity';
@@ -28,6 +29,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     StravaModule,
     ProfileModule,
+    RecommendModule,
   ],
   controllers: [AppController],
   providers: [AppService],

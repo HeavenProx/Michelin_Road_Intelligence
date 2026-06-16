@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { TyreModel } from './tyre-model.entity';
 
 @Entity('tyre_sizes')
@@ -7,37 +13,36 @@ export class TyreSize {
   id!: number;
 
   @ManyToOne(() => TyreModel, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'model_id' })
   model!: TyreModel;
 
-  /** Référence interne Michelin — identique pour toutes les tailles du même modèle */
-  @Column()
+  @Column({ name: 'global_id' })
   globalId!: string;
 
-  /** Désignation complète avec taille (ex: "25-622 (700X25C) POWER ROAD BLACK") */
   @Column({ nullable: true, type: 'text' })
   designation!: string | null;
 
-  @Column({ nullable: true, type: 'integer' })
+  @Column({ name: 'width_mm', nullable: true, type: 'integer' })
   widthMm!: number | null;
 
-  @Column({ nullable: true, type: 'integer' })
+  @Column({ name: 'diameter_etrto', nullable: true, type: 'integer' })
   diameterEtrto!: number | null;
 
-  @Column({ nullable: true, type: 'real' })
+  @Column({ name: 'diameter_inch', nullable: true, type: 'real' })
   diameterInch!: number | null;
 
-  @Column({ nullable: true, type: 'integer' })
+  @Column({ name: 'weight_g', nullable: true, type: 'integer' })
   weightG!: number | null;
 
   @Column({ nullable: true, type: 'text' })
   tpi!: string | null;
 
-  @Column({ nullable: true, type: 'real' })
+  @Column({ name: 'min_pressure_bar', nullable: true, type: 'real' })
   minPressureBar!: number | null;
 
-  @Column({ nullable: true, type: 'real' })
+  @Column({ name: 'max_pressure_bar', nullable: true, type: 'real' })
   maxPressureBar!: number | null;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'ean_code', nullable: true, type: 'text' })
   eanCode!: string | null;
 }
