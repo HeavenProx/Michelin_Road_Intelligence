@@ -1,1 +1,0 @@
-Yo l'équipe
