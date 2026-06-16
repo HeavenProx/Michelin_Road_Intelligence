@@ -4,6 +4,10 @@
 
 App web premium qui transforme les données de ride **Strava** d'un cycliste en **intelligence pneu Michelin**. Projet d'école / hackathon (~4 jours, semaine du 15→19 juin 2026), avec soutenance devant un jury Michelin.
 
+## Gestion de projet (Notion)
+
+La gestion de projet (planning Kanban, liste des tâches, brief client) est tenue dans **Notion**. Au besoin, utilise le **MCP Notion** (`notion-search`, `notion-fetch`) pour aller chercher plus de contexte ou la liste des tâches à jour — la page racine est « Michelin Road Intelligence » et son Kanban « Planning Kanban ». Le résumé ci-dessous peut dater ; Notion fait foi.
+
 ## Pourquoi (brief client)
 
 Michelin fait d'excellents pneus vélo mais n'est pas le choix naturel du cycliste premium (vs Schwalbe / Continental / Maxxis) : faible demande → faible visibilité distributeurs → achat difficile → faible demande. Cible : cyclistes passionnés qui se renseignent en ligne mais achètent en magasin. **But : capter le moment de recherche et le convertir en intention d'achat**, en positionnant l'app comme un *coach technique personnel* (pas un site e-commerce).
@@ -30,12 +34,6 @@ Pas de package.json racine : on travaille `cd backend` ou `cd frontend`.
 Les deux sous-projets utilisent **pnpm**.
 **Backend** (`cd backend`) : `pnpm install` · `pnpm start:dev` (watch) · `pnpm build` · `pnpm test` · `pnpm lint`
 **Frontend** (`cd frontend`) : `pnpm install` · `pnpm dev` (Vite) · `pnpm build`
-
-## ⚠️ Câblage des ports (à corriger en premier sur le backend)
-
-- Frontend dev sur **:3000**, proxifie `/api` et `/auth` vers **http://localhost:3001** (`frontend/vite.config.ts`).
-- Mais `backend/src/main.ts` écoute `PORT ?? 3000`. **Le backend doit écouter sur 3001** (forcer `app.listen(3001)` ou `PORT=3001`).
-- Le backend doit aussi activer **CORS avec credentials**, **sessions** (cookies, pour OAuth Strava) et un **ValidationPipe global** — pas encore fait (scaffold nu).
 
 ## Contrat d'API attendu par le frontend (déjà codé — à implémenter côté backend)
 
@@ -86,6 +84,6 @@ La roadmap Notion prévoit aussi `POST /api/tyre-score` (DTO class-validator) po
 ## Conventions / pièges
 
 - **pnpm partout** (back + front). pnpm v11 bloque par défaut les scripts de build natifs : ils sont autorisés explicitement via `allowBuilds` dans `pnpm-workspace.yaml` (front : `@tailwindcss/oxide`, `esbuild`). Ne pas committer de `package-lock.json`.
-- `backend/` a son **propre dépôt git imbriqué** (`backend/.git`) — vérifier où l'on commite ; à terme, envisager de l'aplatir dans le repo principal.
+- `backend/` est suivi par le dépôt principal (le `.git` imbriqué qu'avait laissé `nest new` a été supprimé). Un seul dépôt git, à la racine.
 - Frontend : alias `@` → `frontend/src`. Tailwind v4 (config via `@tailwindcss/vite`, pas de `tailwind.config.js`).
 - Projet en **français** (UI, docs, commits) — garder cette langue.
