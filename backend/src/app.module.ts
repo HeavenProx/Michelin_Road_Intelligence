@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { StravaModule } from './strava/strava.module';
+import { TyreModel } from './tyres/tyre-model.entity';
+import { TyreSize } from './tyres/tyre-size.entity';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 
@@ -16,7 +18,7 @@ import { UsersModule } from './users/users.module';
       useFactory: (config: ConfigService) => ({
         type: 'better-sqlite3',
         database: config.get<string>('DB_PATH') ?? 'data/michelin.db',
-        entities: [User],
+        entities: [User, TyreModel, TyreSize],
         synchronize: true,
       }),
     }),
