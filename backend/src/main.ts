@@ -32,7 +32,7 @@ async function bootstrap() {
         httpOnly: true,
         sameSite: 'lax',
         secure: isProd,
-        maxAge: 1000 * 60 * 60 * 24, // 24h
+        maxAge: 1000 * 60 * 60 * 24, // 24 h !
       },
     }),
   );

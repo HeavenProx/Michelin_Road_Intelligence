@@ -1,6 +1,10 @@
 # Dépendances
 node_modules/
 
+# Lock files non-pnpm (le projet utilise pnpm exclusivement)
+package-lock.json
+yarn.lock
+
 # Variables d'environnement — NE JAMAIS COMMIT
 .env
 .env.local
