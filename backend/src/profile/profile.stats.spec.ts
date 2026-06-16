@@ -63,6 +63,13 @@ describe('avgSpeedKmh', () => {
     const b = ride({ distanceKm: 60, movingTimeS: 3600 });
     expect(avgSpeedKmh([a, b])).toBe(45);
   });
+  it('détecte une régression vers une moyenne de moyennes (temps asymétriques)', () => {
+    // 30 km en 1 h = 30 km/h ; 30 km en 2 h = 15 km/h
+    // Pondéré : 60 km / 3 h = 20 km/h ; moyenne de moyennes : (30 + 15) / 2 = 22.5 km/h
+    const a = ride({ distanceKm: 30, movingTimeS: 3600 });
+    const b = ride({ distanceKm: 30, movingTimeS: 7200 });
+    expect(avgSpeedKmh([a, b])).toBe(20);
+  });
   it('renvoie 0 si le temps de mouvement total est nul', () => {
     expect(avgSpeedKmh([ride({ distanceKm: 10, movingTimeS: 0 })])).toBe(0);
   });
