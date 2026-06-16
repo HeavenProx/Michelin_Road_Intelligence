@@ -49,7 +49,12 @@ describe('rideCount', () => {
 
 describe('totalDistanceKm', () => {
   it('somme les distances, arrondi 1 décimale', () => {
-    expect(totalDistanceKm([ride({ distanceKm: 10.25 }), ride({ distanceKm: 5.05 })])).toBe(15.3);
+    expect(
+      totalDistanceKm([
+        ride({ distanceKm: 10.25 }),
+        ride({ distanceKm: 5.05 }),
+      ]),
+    ).toBe(15.3);
   });
   it('renvoie 0 pour une liste vide', () => {
     expect(totalDistanceKm([])).toBe(0);
@@ -109,50 +114,78 @@ describe('monthlyDistance', () => {
 
 describe('terrainLabel (densité de grimpe m/km)', () => {
   it('< 8 m/km → Plat', () => {
-    expect(terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 100 })])).toBe('Plat'); // 2
+    expect(
+      terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 100 })]),
+    ).toBe('Plat'); // 2
   });
   it('8 m/km (borne basse) → Mixte', () => {
-    expect(terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 400 })])).toBe('Mixte'); // 8
+    expect(
+      terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 400 })]),
+    ).toBe('Mixte'); // 8
   });
   it('18 m/km (borne haute) → Mixte', () => {
-    expect(terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 900 })])).toBe('Mixte'); // 18
+    expect(
+      terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 900 })]),
+    ).toBe('Mixte'); // 18
   });
   it('> 18 m/km → Montagne', () => {
-    expect(terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 1500 })])).toBe('Montagne'); // 30
+    expect(
+      terrainLabel([ride({ distanceKm: 50, totalElevationGainM: 1500 })]),
+    ).toBe('Montagne'); // 30
   });
 });
 
 describe('styleLabel (échelle de priorité)', () => {
   it('VTT si le type dominant est MountainBikeRide', () => {
-    const rides = [ride({ sportType: 'MountainBikeRide' }), ride({ sportType: 'MountainBikeRide' }), ride({ sportType: 'Ride' })];
+    const rides = [
+      ride({ sportType: 'MountainBikeRide' }),
+      ride({ sportType: 'MountainBikeRide' }),
+      ride({ sportType: 'Ride' }),
+    ];
     expect(styleLabel(rides)).toBe('VTT');
   });
   it('Gravel si le type dominant est GravelRide', () => {
-    const rides = [ride({ sportType: 'GravelRide' }), ride({ sportType: 'GravelRide' }), ride({ sportType: 'Ride' })];
+    const rides = [
+      ride({ sportType: 'GravelRide' }),
+      ride({ sportType: 'GravelRide' }),
+      ride({ sportType: 'Ride' }),
+    ];
     expect(styleLabel(rides)).toBe('Gravel');
   });
   it('Performance sur route si vitesse moyenne ≥ 28 km/h', () => {
-    const rides = [ride({ sportType: 'Ride', distanceKm: 30, movingTimeS: 3600 })]; // 30 km/h
+    const rides = [
+      ride({ sportType: 'Ride', distanceKm: 30, movingTimeS: 3600 }),
+    ]; // 30 km/h
     expect(styleLabel(rides)).toBe('Performance');
   });
   it('Endurance sur route si vitesse < 28 mais distance moyenne ≥ 60 km', () => {
-    const rides = [ride({ sportType: 'Ride', distanceKm: 120, movingTimeS: 17280 })]; // 25 km/h, 120 km
+    const rides = [
+      ride({ sportType: 'Ride', distanceKm: 120, movingTimeS: 17280 }),
+    ]; // 25 km/h, 120 km
     expect(styleLabel(rides)).toBe('Endurance');
   });
   it('Loisir / polyvalent sinon', () => {
-    const rides = [ride({ sportType: 'Ride', distanceKm: 30, movingTimeS: 5400 })]; // 20 km/h, 30 km
+    const rides = [
+      ride({ sportType: 'Ride', distanceKm: 30, movingTimeS: 5400 }),
+    ]; // 20 km/h, 30 km
     expect(styleLabel(rides)).toBe('Loisir / polyvalent');
   });
 });
 
 describe('resolveRegion', () => {
   it('combine ville et pays', () => {
-    expect(resolveRegion({ city: 'Clermont-Ferrand', state: null, country: 'France' })).toBe(
-      'Clermont-Ferrand, France',
-    );
+    expect(
+      resolveRegion({
+        city: 'Clermont-Ferrand',
+        state: null,
+        country: 'France',
+      }),
+    ).toBe('Clermont-Ferrand, France');
   });
   it('utilise la région (state) si la ville est nulle', () => {
-    expect(resolveRegion({ city: null, state: 'Auvergne', country: 'France' })).toBe('Auvergne, France');
+    expect(
+      resolveRegion({ city: null, state: 'Auvergne', country: 'France' }),
+    ).toBe('Auvergne, France');
   });
   it('renvoie une chaîne vide si tout est nul', () => {
     expect(resolveRegion({ city: null, state: null, country: null })).toBe('');
@@ -163,7 +196,11 @@ describe('computeProfileStats', () => {
   const user = { city: 'Lyon', state: null, country: 'France' };
 
   it('renvoie des zéros et des labels neutres pour 0 activité', () => {
-    const stats = computeProfileStats([], user, new Date('2026-03-02T00:00:00Z'));
+    const stats = computeProfileStats(
+      [],
+      user,
+      new Date('2026-03-02T00:00:00Z'),
+    );
     expect(stats).toEqual({
       ride_count: 0,
       total_distance_km: 0,
@@ -178,10 +215,26 @@ describe('computeProfileStats', () => {
 
   it('assemble tous les agrégats pour un jeu non vide', () => {
     const rides = [
-      ride({ distanceKm: 30, movingTimeS: 3600, totalElevationGainM: 100, startDate: '2026-01-01T00:00:00Z', sportType: 'Ride' }),
-      ride({ distanceKm: 60, movingTimeS: 3600, totalElevationGainM: 500, startDate: '2026-02-01T00:00:00Z', sportType: 'Ride' }),
+      ride({
+        distanceKm: 30,
+        movingTimeS: 3600,
+        totalElevationGainM: 100,
+        startDate: '2026-01-01T00:00:00Z',
+        sportType: 'Ride',
+      }),
+      ride({
+        distanceKm: 60,
+        movingTimeS: 3600,
+        totalElevationGainM: 500,
+        startDate: '2026-02-01T00:00:00Z',
+        sportType: 'Ride',
+      }),
     ];
-    const stats = computeProfileStats(rides, user, new Date('2026-03-02T00:00:00Z'));
+    const stats = computeProfileStats(
+      rides,
+      user,
+      new Date('2026-03-02T00:00:00Z'),
+    );
     expect(stats.ride_count).toBe(2);
     expect(stats.total_distance_km).toBe(90);
     expect(stats.avg_speed_kmh).toBe(45); // 90 km / 2 h

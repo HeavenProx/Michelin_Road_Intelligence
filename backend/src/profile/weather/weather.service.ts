@@ -27,11 +27,14 @@ export class WeatherService {
    * via l'API archive d'Open-Meteo. Ne fait jamais échouer l'appelant :
    * les rides sans donnée exploitable sont exclus du dénominateur.
    */
-  async getRainExposure(activities: CyclingActivity[]): Promise<WeatherExposure> {
+  async getRainExposure(
+    activities: CyclingActivity[],
+  ): Promise<WeatherExposure> {
     const sample = activities
       .filter((a) => a.startLatlng != null)
       .sort(
-        (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
       )
       .slice(0, SAMPLE_SIZE);
 
@@ -109,14 +112,18 @@ export class WeatherService {
     try {
       const res = await fetch(`${ARCHIVE_URL}?${params.toString()}`);
       if (!res.ok) {
-        this.logger.warn(`Open-Meteo archive a répondu ${res.status} pour ${date}.`);
+        this.logger.warn(
+          `Open-Meteo archive a répondu ${res.status} pour ${date}.`,
+        );
         return null;
       }
       const data = (await res.json()) as ArchiveResponse;
       const value = data.daily?.precipitation_sum?.[0];
       return typeof value === 'number' ? value : null;
     } catch (err) {
-      this.logger.warn(`Open-Meteo archive injoignable pour ${date}: ${String(err)}`);
+      this.logger.warn(
+        `Open-Meteo archive injoignable pour ${date}: ${String(err)}`,
+      );
       return null;
     }
   }

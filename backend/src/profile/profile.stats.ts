@@ -34,10 +34,15 @@ export function avgElevationM(activities: CyclingActivity[]): number {
   return Math.round(sum / activities.length);
 }
 
-export function monthlyDistance(activities: CyclingActivity[], now: Date): number {
+export function monthlyDistance(
+  activities: CyclingActivity[],
+  now: Date,
+): number {
   if (activities.length === 0) return 0;
   const total = activities.reduce((acc, a) => acc + a.distanceKm, 0);
-  const firstMs = Math.min(...activities.map((a) => new Date(a.startDate).getTime()));
+  const firstMs = Math.min(
+    ...activities.map((a) => new Date(a.startDate).getTime()),
+  );
   const days = (now.getTime() - firstMs) / MS_PER_DAY;
   const monthsCovered = Math.max(1, Math.ceil(days / 30));
   return Math.round(total / monthsCovered);

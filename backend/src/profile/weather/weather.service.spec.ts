@@ -31,9 +31,10 @@ function ride(overrides: Partial<CyclingActivity> = {}): CyclingActivity {
 function archiveResponse(precipitationSum: number | null) {
   return {
     ok: true,
-    json: async () => ({
-      daily: { time: ['2026-05-10'], precipitation_sum: [precipitationSum] },
-    }),
+    json: () =>
+      Promise.resolve({
+        daily: { time: ['2026-05-10'], precipitation_sum: [precipitationSum] },
+      }),
   } as Response;
 }
 
@@ -44,7 +45,7 @@ describe('WeatherService.getRainExposure', () => {
   beforeEach(() => {
     service = new WeatherService();
     fetchMock = jest.fn();
-    global.fetch = fetchMock as unknown as typeof fetch;
+    global.fetch = fetchMock;
   });
 
   it('ne fait aucun appel et renvoie {0,0} sans ride géolocalisé', async () => {
@@ -70,8 +71,15 @@ describe('WeatherService.getRainExposure', () => {
       .mockResolvedValueOnce(archiveResponse(5)) // ride le plus récent
       .mockResolvedValueOnce(archiveResponse(0)); // ride plus ancien
     const rides = [
-      ride({ startDateLocal: '2026-05-10T10:00:00', startDate: '2026-05-10T08:00:00Z' }),
-      ride({ startDateLocal: '2026-05-01T10:00:00', startDate: '2026-05-01T08:00:00Z', startLatlng: [48.8, 2.3] }),
+      ride({
+        startDateLocal: '2026-05-10T10:00:00',
+        startDate: '2026-05-10T08:00:00Z',
+      }),
+      ride({
+        startDateLocal: '2026-05-01T10:00:00',
+        startDate: '2026-05-01T08:00:00Z',
+        startLatlng: [48.8, 2.3],
+      }),
     ];
     const result = await service.getRainExposure(rides);
     expect(result).toEqual({ rain_percentage: 50, rainy_rides: 1 });
@@ -101,7 +109,7 @@ describe('WeatherService.getRainExposure', () => {
   });
 
   it('traite une réponse HTTP en échec comme une donnée manquante', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 500 } as Response);
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 500 });
     const result = await service.getRainExposure([ride()]);
     expect(result).toEqual({ rain_percentage: 0, rainy_rides: 0 });
   });
