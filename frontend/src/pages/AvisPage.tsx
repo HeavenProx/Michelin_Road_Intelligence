@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Star, MapPin, TrendingUp, Bike, Filter } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
 import { CritBar } from "@/components/CritBar";
 import { ReviewModal } from "@/components/ReviewModal";
 import { REVIEWS, RECO } from "@/data/demo";
+import type { Review } from "@/types";
 
 export function AvisPage() {
   const MY_TIRE = RECO.model;
@@ -12,13 +13,30 @@ export function AvisPage() {
   const [filterQuery, setFilterQuery] = useState("");
   const [showModal, setShowModal]     = useState(false);
 
-  const tireStats = Array.from(new Set(REVIEWS.map((r) => r.tire))).map((tire) => {
-    const subset = REVIEWS.filter((r) => r.tire === tire);
+  const [reviews, setReviews] = useState<Review[]>(REVIEWS);
+
+  const loadReviews = useCallback(() => {
+    fetch("/api/reviews", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP error"))))
+      .then((data: Review[]) => {
+        if (Array.isArray(data) && data.length > 0) setReviews(data);
+      })
+      .catch(() => {
+        /* fallback silencieux sur les données démo (convention projet) */
+      });
+  }, []);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  const tireStats = Array.from(new Set(reviews.map((r) => r.tire))).map((tire) => {
+    const subset = reviews.filter((r) => r.tire === tire);
     const avg = subset.reduce((s, r) => s + r.rating, 0) / subset.length;
     return { tire, count: subset.length, avg: Math.round(avg * 10) / 10 };
   });
 
-  const filtered = filter === "Tous" ? REVIEWS : REVIEWS.filter((r) => r.tire === filter);
+  const filtered = filter === "Tous" ? reviews : reviews.filter((r) => r.tire === filter);
 
   return (
     <div className="px-4 py-5 space-y-5">
@@ -61,7 +79,7 @@ export function AvisPage() {
               />
             </div>
           </div>
-          {[{ tire: "Tous", count: REVIEWS.length, avg: null as number | null }, ...tireStats]
+          {[{ tire: "Tous", count: reviews.length, avg: null as number | null }, ...tireStats]
             .filter(({ tire }) => tire === "Tous" || tire.toLowerCase().includes(filterQuery.toLowerCase()))
             .map(({ tire, count, avg }) => (
               <button

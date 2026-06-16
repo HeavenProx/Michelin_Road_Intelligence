@@ -43,3 +43,16 @@ export interface LiveData {
   reco: LiveReco;
   isDemo?: boolean;
 }
+
+export interface Review {
+  id: number;
+  name: string;
+  location: string;
+  tire: string;
+  km: number;
+  totalKm: number;
+  rating: number;
+  text: string;
+  date: string;
+  criteria: { grip: number; durabilite: number; confort: number; anticrv: number };
+}
