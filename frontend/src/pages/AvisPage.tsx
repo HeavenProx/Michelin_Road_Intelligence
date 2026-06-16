@@ -168,7 +168,12 @@ export function AvisPage() {
         </button>
       </div>
 
-      <ReviewModal open={showModal} onClose={() => setShowModal(false)} tireName={MY_TIRE} />
+      <ReviewModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        tireName={MY_TIRE}
+        onSubmitted={loadReviews}
+      />
     </div>
   );
 }

@@ -1,17 +1,57 @@
 import { useState } from "react";
 import { Star, CheckCircle } from "lucide-react";
 
-export function ReviewModal({ open, onClose, tireName }: { open: boolean; onClose: () => void; tireName: string }) {
+export function ReviewModal({
+  open,
+  onClose,
+  tireName,
+  onSubmitted,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tireName: string;
+  onSubmitted?: () => void;
+}) {
   const [rating, setRating]     = useState(0);
   const [hover, setHover]       = useState(0);
   const [criteria, setCriteria] = useState({ grip: 0, durabilite: 0, confort: 0, anticrv: 0 });
   const [comment, setComment]   = useState("");
   const [done, setDone]         = useState(false);
+  const [error, setError]       = useState("");
 
   if (!open) return null;
 
-  function submit() {
+  async function submit() {
     if (!rating) return;
+    setError("");
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tire: tireName,
+          rating,
+          grip: criteria.grip,
+          durabilite: criteria.durabilite,
+          confort: criteria.confort,
+          anticrv: criteria.anticrv,
+          comment,
+        }),
+      });
+      if (!res.ok) {
+        setError(
+          res.status === 401
+            ? "Connectez-vous via Strava pour publier votre avis."
+            : "Une erreur est survenue. Réessayez.",
+        );
+        return;
+      }
+    } catch {
+      setError("Une erreur est survenue. Réessayez.");
+      return;
+    }
+    onSubmitted?.();
     setDone(true);
     setTimeout(() => {
       onClose();
@@ -19,6 +59,7 @@ export function ReviewModal({ open, onClose, tireName }: { open: boolean; onClos
       setRating(0);
       setCriteria({ grip: 0, durabilite: 0, confort: 0, anticrv: 0 });
       setComment("");
+      setError("");
     }, 1800);
   }
 
@@ -85,6 +126,9 @@ export function ReviewModal({ open, onClose, tireName }: { open: boolean; onClos
               />
             </div>
 
+            {error && (
+              <p className="text-sm text-red-600 mb-3">{error}</p>
+            )}
             <div className="flex gap-3">
               <button onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors">
                 Annuler
