@@ -9,6 +9,7 @@ import type { Review } from "@/types";
 export function AvisPage() {
   const { liveData } = useApp();
   const recommendedTire = liveData?.reco.recommended.name ?? "";
+  const alternativeTires = liveData?.reco.alternatives.map((a) => a.name) ?? [];
 
   const [filter, setFilter] = useState("Tous");
   const [showFilter, setShowFilter] = useState(false);
@@ -16,10 +17,6 @@ export function AvisPage() {
   const [showModal, setShowModal] = useState(false);
 
   const [reviews, setReviews] = useState<Review[]>([]);
-
-  useEffect(() => {
-    if (recommendedTire) setFilter(recommendedTire);
-  }, [recommendedTire]);
 
   const loadReviews = useCallback(() => {
     fetch("/api/reviews", { credentials: "include" })
@@ -51,7 +48,9 @@ export function AvisPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Avis</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{filtered.length} avis{filter !== "Tous" && ` · ${filter}`}</p>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {filtered.length} avis{filter !== "Tous" && ` · ${filter}`}
+          </p>
         </div>
         <button
           onClick={() => setShowFilter((v) => !v)}
@@ -66,13 +65,45 @@ export function AvisPage() {
         </button>
       </div>
 
-      {/* Note explicative */}
-      <p className="text-xs text-gray-400 leading-relaxed -mt-2">
-        Les avis affichés par défaut portent sur votre pneu actuel.
-        N&apos;hésitez pas à appliquer un filtre si vous souhaitez consulter les
-        avis sur d&apos;autres pneus.
-      </p>
-
+      {/* Chips de filtres rapides */}
+      <div className="flex flex-wrap gap-2 -mt-2">
+        <button
+          onClick={() => setFilter("Tous")}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+            filter === "Tous"
+              ? "bg-[#00205B] text-white border-[#00205B]"
+              : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+          }`}
+        >
+          Tous ({reviews.length})
+        </button>
+        {recommendedTire && (
+          <button
+            onClick={() => setFilter(recommendedTire)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+              filter === recommendedTire
+                ? "bg-[#FCE500] text-[#00205B] border-[#FCE500]"
+                : "bg-[#FCE500]/10 text-[#00205B] border-[#FCE500]/40 hover:border-[#FCE500]"
+            }`}
+          >
+            ★ {recommendedTire} (
+            {reviews.filter((r) => r.tire === recommendedTire).length})
+          </button>
+        )}
+        {alternativeTires.map((tire) => (
+          <button
+            key={tire}
+            onClick={() => setFilter(tire)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+              filter === tire
+                ? "bg-[#00205B] text-white border-[#00205B]"
+                : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+            }`}
+          >
+            {tire} ({reviews.filter((r) => r.tire === tire).length})
+          </button>
+        ))}
+      </div>
 
       {/* Panneau filtre */}
       {showFilter && (

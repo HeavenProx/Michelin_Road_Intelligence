@@ -22,7 +22,7 @@ import { usePeers } from "@/hooks/usePeers";
 
 export function DashboardPage() {
   const { liveData, loading, loadLiveData } = useApp();
-  const { data: peers } = usePeers();
+  const { data: peers } = usePeers(liveData?.isDemo ?? false);
   const [showStores, setShowStores] = useState(false);
 
   if (!liveData) return <Navigate to="/" replace />;
@@ -52,9 +52,17 @@ export function DashboardPage() {
 
   const profileTags = [
     { id: "terrain", Icon: Mountain, label: liveData.profile.terrain_label },
-    { id: "style",   Icon: Zap,      label: liveData.profile.style_label },
-    { id: "wet",     Icon: Droplets, label: hasWeather ? `${rainPct}% humide` : "Données insuffisantes" },
-    { id: "dry",     Icon: Sun,      label: hasWeather ? `${dryPct}% sèche` : "Données insuffisantes" },
+    { id: "style", Icon: Zap, label: liveData.profile.style_label },
+    {
+      id: "wet",
+      Icon: Droplets,
+      label: hasWeather ? `${rainPct}% humide` : "Données insuffisantes",
+    },
+    {
+      id: "dry",
+      Icon: Sun,
+      label: hasWeather ? `${dryPct}% sèche` : "Données insuffisantes",
+    },
   ];
 
   return (
@@ -86,7 +94,10 @@ export function DashboardPage() {
                 title="Rafraîchir les données"
                 className="text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+                <RefreshCw
+                  size={18}
+                  className={loading ? "animate-spin" : ""}
+                />
               </button>
             )}
             <div className="flex items-center gap-1.5">
@@ -97,7 +108,9 @@ export function DashboardPage() {
               >
                 <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
               </svg>
-              <span className="text-[#FC4C02] font-semibold text-sm">Strava</span>
+              <span className="text-[#FC4C02] font-semibold text-sm">
+                Strava
+              </span>
             </div>
           </div>
         </div>
@@ -135,7 +148,10 @@ export function DashboardPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             {profileTags.map(({ id, Icon, label }) => (
-              <div key={id} className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 bg-white">
+              <div
+                key={id}
+                className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 bg-white"
+              >
                 <Icon size={12} className="text-[#27509B]" />
                 <span className="text-[#27509B] text-sm font-medium">
                   {label}

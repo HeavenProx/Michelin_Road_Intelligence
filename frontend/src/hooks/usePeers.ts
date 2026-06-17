@@ -14,12 +14,13 @@ export interface Peer {
   date: string;
 }
 
-async function fetchPeers(): Promise<Peer[]> {
-  const r = await fetch("/api/peers", { credentials: "include" });
+async function fetchPeers(isDemo: boolean): Promise<Peer[]> {
+  const url = isDemo ? "/api/peers/demo" : "/api/peers";
+  const r = await fetch(url, { credentials: "include" });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
 
-export function usePeers() {
-  return useQuery<Peer[]>(fetchPeers);
+export function usePeers(isDemo: boolean) {
+  return useQuery<Peer[]>(() => fetchPeers(isDemo));
 }

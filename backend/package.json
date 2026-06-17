@@ -20,7 +20,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "import:tyres": "tsx scripts/import-tyres.ts",
-    "seed:reviews": "ts-node --transpile-only -r tsconfig-paths/register scripts/seed-reviews.ts"
+    "seed:reviews": "ts-node --transpile-only -r tsconfig-paths/register scripts/seed-reviews.ts",
+    "seed:peers": "ts-node --transpile-only -r tsconfig-paths/register scripts/seed-peers.ts",
+    "seed": "pnpm seed:reviews && pnpm seed:peers",
+    "reset:seeds": "ts-node --transpile-only -r tsconfig-paths/register scripts/reset-seeds.ts",
+    "reseed": "pnpm reset:seeds && pnpm seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
