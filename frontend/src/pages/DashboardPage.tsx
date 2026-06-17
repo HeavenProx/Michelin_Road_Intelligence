@@ -44,13 +44,16 @@ export function DashboardPage() {
   const recoFeatures = liveData.reco.recommended.features ?? [];
 
   const rainPct = liveData.profile.weather_exposure.rain_percentage;
-  const dryPct = Math.round(100 - rainPct);
+  // `null` = météo indisponible : on affiche "Données insuffisantes" comme les
+  // chips terrain/style, au lieu d'un trompeur 0% humide / 100% sèche.
+  const hasWeather = rainPct != null;
+  const dryPct = hasWeather ? Math.round(100 - rainPct) : 0;
 
   const profileTags = [
     { id: "terrain", Icon: Mountain, label: liveData.profile.terrain_label },
     { id: "style",   Icon: Zap,      label: liveData.profile.style_label },
-    { id: "wet",     Icon: Droplets, label: `${rainPct}% humide` },
-    { id: "dry",     Icon: Sun,      label: `${dryPct}% sèche` },
+    { id: "wet",     Icon: Droplets, label: hasWeather ? `${rainPct}% humide` : "Données insuffisantes" },
+    { id: "dry",     Icon: Sun,      label: hasWeather ? `${dryPct}% sèche` : "Données insuffisantes" },
   ];
 
   return (

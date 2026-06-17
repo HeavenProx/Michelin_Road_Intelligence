@@ -48,9 +48,9 @@ describe('WeatherService.getRainExposure', () => {
     global.fetch = fetchMock;
   });
 
-  it('ne fait aucun appel et renvoie {0,0} sans ride géolocalisé', async () => {
+  it('ne fait aucun appel et renvoie {null,null} sans ride géolocalisé', async () => {
     const result = await service.getRainExposure([ride({ startLatlng: null })]);
-    expect(result).toEqual({ rain_percentage: 0, rainy_rides: 0 });
+    expect(result).toEqual({ rain_percentage: null, rainy_rides: null });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -108,15 +108,15 @@ describe('WeatherService.getRainExposure', () => {
     expect(result).toEqual({ rain_percentage: 100, rainy_rides: 1 });
   });
 
-  it('traite une réponse HTTP en échec comme une donnée manquante', async () => {
+  it('renvoie {null,null} quand aucune donnée n est exploitable (HTTP en échec)', async () => {
     fetchMock.mockResolvedValueOnce({ ok: false, status: 500 });
     const result = await service.getRainExposure([ride()]);
-    expect(result).toEqual({ rain_percentage: 0, rainy_rides: 0 });
+    expect(result).toEqual({ rain_percentage: null, rainy_rides: null });
   });
 
-  it('ne fait pas échouer la requête si fetch lève', async () => {
+  it('renvoie {null,null} si fetch lève (aucune donnée exploitable)', async () => {
     fetchMock.mockRejectedValueOnce(new Error('network down'));
     const result = await service.getRainExposure([ride()]);
-    expect(result).toEqual({ rain_percentage: 0, rainy_rides: 0 });
+    expect(result).toEqual({ rain_percentage: null, rainy_rides: null });
   });
 });

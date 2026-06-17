@@ -39,7 +39,7 @@ export class WeatherService {
       .slice(0, SAMPLE_SIZE);
 
     if (sample.length === 0) {
-      return { rain_percentage: 0, rainy_rides: 0 };
+      return { rain_percentage: null, rainy_rides: null };
     }
 
     const cache = new Map<string, number | null>();
@@ -61,7 +61,7 @@ export class WeatherService {
     }
 
     if (exploitable === 0) {
-      return { rain_percentage: 0, rainy_rides: 0 };
+      return { rain_percentage: null, rainy_rides: null };
     }
     return {
       rainy_rides: rainy,

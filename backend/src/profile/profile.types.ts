@@ -1,7 +1,12 @@
-/** Exposition à la pluie, sous-objet du contrat d'API. */
+/**
+ * Exposition à la pluie, sous-objet du contrat d'API.
+ * `null` signale une donnée météo indisponible (aucun ride géolocalisé ou
+ * archive Open-Meteo injoignable), à distinguer d'un vrai 0 % (rides exploités,
+ * aucun pluvieux).
+ */
 export interface WeatherExposure {
-  rain_percentage: number;
-  rainy_rides: number;
+  rain_percentage: number | null;
+  rainy_rides: number | null;
 }
 
 /**

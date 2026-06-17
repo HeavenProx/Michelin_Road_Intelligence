@@ -157,7 +157,7 @@ export class RecommendService {
 
   /** Poids dynamiques : chaque dimension est pondérée selon le profil du cycliste. */
   private computeWeights(profile: RiderProfile): Record<string, number> {
-    const rain = profile.weather_exposure.rain_percentage / 100;
+    const rain = (profile.weather_exposure.rain_percentage ?? 0) / 100;
     const style = profile.style_label;
     const terrain = profile.terrain_label;
 
@@ -205,7 +205,7 @@ export class RecommendService {
   }
 
   private generateExplanation(profile: RiderProfile, model: TyreModel): string {
-    const rain = Math.round(profile.weather_exposure.rain_percentage);
+    const rain = Math.round(profile.weather_exposure.rain_percentage ?? 0);
     const terrain =
       profile.terrain_label !== 'Données insuffisantes'
         ? profile.terrain_label.toLowerCase()

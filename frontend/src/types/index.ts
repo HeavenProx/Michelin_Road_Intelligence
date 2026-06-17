@@ -16,7 +16,8 @@ export interface LiveProfile {
   avg_elevation_m: number;
   terrain_label: string;
   style_label: string;
-  weather_exposure: { rain_percentage: number; rainy_rides?: number };
+  // `rain_percentage: null` = donnée météo indisponible (à distinguer d'un vrai 0 %).
+  weather_exposure: { rain_percentage: number | null; rainy_rides?: number | null };
   region: string;
 }
 

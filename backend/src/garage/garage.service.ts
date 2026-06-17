@@ -227,7 +227,7 @@ export class GarageService {
     if (score.coeffTerrainMoyen > 1.1) {
       parts.push('Vos sorties hors-asphalte accélèrent l’abrasion.');
     }
-    const rain = Math.round(profile.weather_exposure.rain_percentage);
+    const rain = Math.round(profile.weather_exposure.rain_percentage ?? 0);
     if (rain >= 20) {
       parts.push(
         `Avec ${rain}% de sorties sous la pluie, surveillez l'accroche sur la fin de vie.`,
