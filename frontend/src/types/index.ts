@@ -44,6 +44,14 @@ export interface LiveData {
   isDemo?: boolean;
 }
 
+export interface WearAlert {
+  id: string;
+  tire: string;
+  wear: number;
+  date: string;
+  dismissed: boolean;
+}
+
 export interface Review {
   id: number;
   name: string;

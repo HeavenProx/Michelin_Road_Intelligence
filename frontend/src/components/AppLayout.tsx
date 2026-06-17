@@ -4,14 +4,14 @@ import { User, Package, Bell, Star, LogOut, Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 const NAV_ITEMS = [
-  { path: "/profil",    label: "Profil",    Icon: User    },
-  { path: "/mon-pneu",  label: "Mon pneu",  Icon: Package },
-  { path: "/alertes",   label: "Alertes",   Icon: Bell, badge: 1 },
-  { path: "/avis",      label: "Avis",      Icon: Star    },
+  { path: "/profil",   label: "Profil",   Icon: User    },
+  { path: "/mon-pneu", label: "Mon pneu", Icon: Package },
+  { path: "/alertes",  label: "Alertes",  Icon: Bell    },
+  { path: "/avis",     label: "Avis",     Icon: Star    },
 ];
 
 export function AppLayout() {
-  const { liveData, loading, connectStrava, logout } = useApp();
+  const { liveData, loading, connectStrava, logout, alertCount } = useApp();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -82,32 +82,35 @@ export function AppLayout() {
       {/* Bottom navigation */}
       <nav className="fixed bottom-0 inset-x-0 z-20 bg-white border-t border-gray-200">
         <div className="max-w-[45rem] mx-auto grid grid-cols-4">
-          {NAV_ITEMS.map(({ path, label, Icon, badge }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className="relative flex flex-col items-center justify-center pt-2 pb-2 gap-0.5"
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#27509B] rounded-full" />
-                  )}
-                  <div className="relative">
-                    <Icon size={22} className={isActive ? "text-[#27509B]" : "text-gray-400"} />
-                    {badge && (
-                      <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-0.5">
-                        {badge}
-                      </span>
+          {NAV_ITEMS.map(({ path, label, Icon }) => {
+            const badge = path === "/alertes" ? alertCount : 0;
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                className="relative flex flex-col items-center justify-center pt-2 pb-2 gap-0.5"
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#27509B] rounded-full" />
                     )}
-                  </div>
-                  <span className={`text-[10px] font-medium ${isActive ? "text-[#27509B]" : "text-gray-400"}`}>
-                    {label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
+                    <div className="relative">
+                      <Icon size={22} className={isActive ? "text-[#27509B]" : "text-gray-400"} />
+                      {badge > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-0.5">
+                          {badge}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-[10px] font-medium ${isActive ? "text-[#27509B]" : "text-gray-400"}`}>
+                      {label}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 

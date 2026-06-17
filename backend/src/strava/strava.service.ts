@@ -1,10 +1,16 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import type { User } from '../users/user.entity';
-import type { CyclingActivity, StravaSummaryActivityRaw } from './strava.types';
+import type {
+  CyclingActivity,
+  StravaBike,
+  StravaBikeRaw,
+  StravaSummaryActivityRaw,
+} from './strava.types';
 
 const STRAVA_ACTIVITIES_URL =
   'https://www.strava.com/api/v3/athlete/activities';
+const STRAVA_ATHLETE_URL = 'https://www.strava.com/api/v3/athlete';
 
 /** Types d'activités Strava considérés comme du vélo. */
 const CYCLING_SPORT_TYPES = new Set([
@@ -68,6 +74,34 @@ export class StravaService {
       `Athlète ${user.stravaId} : ${cycling.length} activités vélo récupérées (fenêtre ${sinceDays} j).`,
     );
     return cycling.slice(0, maxActivities);
+  }
+
+  /**
+   * Liste les vélos du compte Strava (DetailedAthlete.bikes), normalisés en km.
+   * Sert à peupler le garage.
+   */
+  async getAthleteBikes(user: User): Promise<StravaBike[]> {
+    const token = await this.authService.getValidAccessToken(user);
+    const res = await fetch(STRAVA_ATHLETE_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      this.logger.error(`GET /athlete a échoué (${res.status}): ${detail}`);
+      throw new HttpException(
+        `Échec de la récupération du profil Strava (HTTP ${res.status}).`,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
+    const data = (await res.json()) as { bikes?: StravaBikeRaw[] };
+    return (data.bikes ?? []).map((b) => ({
+      gearId: b.id,
+      name: b.name,
+      distanceKm: Math.round((b.distance ?? 0) / 1000),
+      primary: b.primary ?? false,
+    }));
   }
 
   /**

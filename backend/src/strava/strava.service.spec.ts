@@ -148,6 +148,40 @@ describe('StravaService', () => {
     await expect(service.getCyclingActivities(makeUser())).rejects.toThrow();
   });
 
+  describe('getAthleteBikes', () => {
+    it('mappe les vélos de GET /athlete vers StravaBike[]', async () => {
+      const user = { stravaId: 1 } as unknown as User;
+      const authService = {
+        getValidAccessToken: jest.fn().mockResolvedValue('tok'),
+      } as unknown as AuthService;
+      const service = new StravaService(authService);
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            bikes: [
+              {
+                id: 'b123',
+                name: 'Tarmac',
+                distance: 1_500_000,
+                primary: true,
+              },
+              { id: 'b456', name: 'Checkpoint', distance: 800_000 },
+            ],
+          }),
+      }) as typeof fetch;
+
+      const bikes = await service.getAthleteBikes(user);
+
+      expect(bikes).toEqual([
+        { gearId: 'b123', name: 'Tarmac', distanceKm: 1500, primary: true },
+        { gearId: 'b456', name: 'Checkpoint', distanceKm: 800, primary: false },
+      ]);
+    });
+  });
+
   describe('kmRiddenSince', () => {
     it('somme les distances des activités postérieures à la date donnée', async () => {
       const since = new Date('2026-05-01T00:00:00Z');

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useApp } from "@/context/AppContext";
 import { ArrowRight, CheckCircle, ChevronRight, AlertTriangle, Star } from "lucide-react";
 import { GaugeWear } from "@/components/GaugeWear";
 import { StoreSection } from "@/components/StoreSection";
@@ -6,6 +7,8 @@ import { ReviewModal } from "@/components/ReviewModal";
 import { TIRE_MODELS } from "@/data/demo";
 
 export function GaragePage() {
+  const { triggerWearAlert } = useApp();
+
   const [selectedIdx, setSelectedIdx]         = useState(0);
   const [dateInput, setDateInput]             = useState("2025-08-15");
   const [open, setOpen]                       = useState(false);
@@ -19,6 +22,11 @@ export function GaragePage() {
   const kmLeft   = Math.max(0, kmMax - kmUsed);
   const wear     = Math.min(100, Math.round((kmUsed / kmMax) * 100));
   const critical = wear >= 80;
+
+  useEffect(() => {
+    if (critical) triggerWearAlert(model.name, wear);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [critical, model.name]);
 
   const cardBg     = critical ? "bg-red-50" : wear >= 55 ? "bg-amber-50" : "bg-green-50";
   const statusText  = critical ? "À remplacer" : wear >= 55 ? "À surveiller" : "Bon état";
@@ -145,7 +153,7 @@ export function GaragePage() {
       {/* Section magasins */}
       {showStores && (
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <StoreSection filterId="gshadow" />
+          <StoreSection />
         </div>
       )}
 

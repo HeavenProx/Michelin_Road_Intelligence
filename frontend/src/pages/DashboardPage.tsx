@@ -23,10 +23,10 @@ export function DashboardPage() {
   const recoDesc = liveData?.reco.explanation ?? RECO.shortDescription;
 
   const profileTags = [
-    { Icon: Mountain, label: liveData?.profile.terrain_label ?? "Montagne" },
-    { Icon: Zap, label: liveData?.profile.style_label ?? RIDER.style },
-    { Icon: Droplets, label: `${liveData?.profile.weather_exposure.rain_percentage ?? RIDER.weather.wet}% humide` },
-    { Icon: Sun, label: `${RIDER.weather.dry}% sèche` },
+    { id: "terrain", Icon: Mountain, label: liveData?.profile.terrain_label ?? "Montagne" },
+    { id: "style",   Icon: Zap,      label: liveData?.profile.style_label ?? RIDER.style },
+    { id: "wet",     Icon: Droplets, label: `${liveData?.profile.weather_exposure.rain_percentage ?? RIDER.weather.wet}% humide` },
+    { id: "dry",     Icon: Sun,      label: `${RIDER.weather.dry}% sèche` },
   ];
 
   return (
@@ -73,8 +73,8 @@ export function DashboardPage() {
         <div>
           <p className="text-gray-400 text-[10px] font-bold tracking-[0.18em] uppercase mb-3">Votre profil</p>
           <div className="flex flex-wrap gap-2">
-            {profileTags.map(({ Icon, label }) => (
-              <div key={label} className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 bg-white">
+            {profileTags.map(({ id, Icon, label }) => (
+              <div key={id} className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 bg-white">
                 <Icon size={12} className="text-[#27509B]" />
                 <span className="text-[#27509B] text-sm font-medium">{label}</span>
               </div>
@@ -122,7 +122,7 @@ export function DashboardPage() {
         {/* Section magasins (toggle) */}
         {showStores && (
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-            <StoreSection filterId="pshadow" />
+            <StoreSection />
           </div>
         )}
 

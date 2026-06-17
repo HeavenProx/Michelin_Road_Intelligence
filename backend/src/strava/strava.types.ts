@@ -79,3 +79,21 @@ export interface CyclingActivity {
   /** Vélo associé (gear_id Strava), null si non renseigné. */
   gearId: string | null;
 }
+
+/** Vélo brut renvoyé dans le champ `bikes[]` de GET /athlete (DetailedAthlete). */
+export interface StravaBikeRaw {
+  id: string;
+  name: string;
+  /** Distance totale en mètres. */
+  distance: number;
+  primary?: boolean;
+}
+
+/** Vélo normalisé (km) exploité par le garage. */
+export interface StravaBike {
+  /** gear_id Strava (ex: "b123"). */
+  gearId: string;
+  name: string;
+  distanceKm: number;
+  primary: boolean;
+}
