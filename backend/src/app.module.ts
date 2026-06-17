@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { AvisModule } from './avis/avis.module';
+import { Review } from './avis/review.entity';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileSnapshot } from './profile/profile-snapshot.entity';
 import { RecommendModule } from './recommend/recommend.module';
@@ -21,7 +23,7 @@ import { UsersModule } from './users/users.module';
       useFactory: (config: ConfigService) => ({
         type: 'better-sqlite3',
         database: config.get<string>('DB_PATH') ?? 'data/michelin.db',
-        entities: [User, TyreModel, TyreSize, ProfileSnapshot],
+        entities: [User, TyreModel, TyreSize, ProfileSnapshot, Review],
         synchronize: true,
       }),
     }),
@@ -30,6 +32,7 @@ import { UsersModule } from './users/users.module';
     StravaModule,
     ProfileModule,
     RecommendModule,
+    AvisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

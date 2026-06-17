@@ -147,4 +147,33 @@ describe('StravaService', () => {
 
     await expect(service.getCyclingActivities(makeUser())).rejects.toThrow();
   });
+
+  describe('kmRiddenSince', () => {
+    it('somme les distances des activités postérieures à la date donnée', async () => {
+      const since = new Date('2026-05-01T00:00:00Z');
+      jest.spyOn(service, 'getCyclingActivities').mockResolvedValue([
+        { distanceKm: 30, startDate: '2026-05-02T08:00:00Z' },
+        { distanceKm: 20, startDate: '2026-05-10T08:00:00Z' },
+        { distanceKm: 99, startDate: '2026-04-15T08:00:00Z' }, // avant `since` → exclue
+      ] as never);
+
+      const km = await service.kmRiddenSince(makeUser(), since);
+
+      expect(km).toBe(50);
+    });
+
+    it("arrondit à l'entier le plus proche", async () => {
+      jest.spyOn(service, 'getCyclingActivities').mockResolvedValue([
+        { distanceKm: 12.4, startDate: '2026-06-01T08:00:00Z' },
+        { distanceKm: 7.3, startDate: '2026-06-02T08:00:00Z' },
+      ] as never);
+
+      const km = await service.kmRiddenSince(
+        makeUser(),
+        new Date('2026-01-01T00:00:00Z'),
+      );
+
+      expect(km).toBe(20);
+    });
+  });
 });

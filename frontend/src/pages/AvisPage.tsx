@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Star, MapPin, TrendingUp, Bike, Filter } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
 import { CritBar } from "@/components/CritBar";
 import { ReviewModal } from "@/components/ReviewModal";
 import { REVIEWS, RECO } from "@/data/demo";
+import type { Review } from "@/types";
 
 export function AvisPage() {
   const MY_TIRE = RECO.model;
@@ -12,21 +13,38 @@ export function AvisPage() {
   const [filterQuery, setFilterQuery] = useState("");
   const [showModal, setShowModal]     = useState(false);
 
-  const tireStats = Array.from(new Set(REVIEWS.map((r) => r.tire))).map((tire) => {
-    const subset = REVIEWS.filter((r) => r.tire === tire);
+  const [reviews, setReviews] = useState<Review[]>(REVIEWS);
+
+  const loadReviews = useCallback(() => {
+    fetch("/api/reviews", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP error"))))
+      .then((data: Review[]) => {
+        if (Array.isArray(data) && data.length > 0) setReviews(data);
+      })
+      .catch(() => {
+        /* fallback silencieux sur les données démo (convention projet) */
+      });
+  }, []);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  const tireStats = Array.from(new Set(reviews.map((r) => r.tire))).map((tire) => {
+    const subset = reviews.filter((r) => r.tire === tire);
     const avg = subset.reduce((s, r) => s + r.rating, 0) / subset.length;
     return { tire, count: subset.length, avg: Math.round(avg * 10) / 10 };
   });
 
-  const filtered = filter === "Tous" ? REVIEWS : REVIEWS.filter((r) => r.tire === filter);
+  const filtered = filter === "Tous" ? reviews : reviews.filter((r) => r.tire === filter);
 
   return (
     <div className="px-4 py-5 space-y-5">
       {/* En-tête */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Avis vérifiés</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{REVIEWS.length} avis vérifiés</p>
+          <h1 className="text-2xl font-bold text-gray-900">Avis</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{reviews.length} avis</p>
         </div>
         <button
           onClick={() => setShowFilter((v) => !v)}
@@ -61,7 +79,7 @@ export function AvisPage() {
               />
             </div>
           </div>
-          {[{ tire: "Tous", count: REVIEWS.length, avg: null as number | null }, ...tireStats]
+          {[{ tire: "Tous", count: reviews.length, avg: null as number | null }, ...tireStats]
             .filter(({ tire }) => tire === "Tous" || tire.toLowerCase().includes(filterQuery.toLowerCase()))
             .map(({ tire, count, avg }) => (
               <button
@@ -140,17 +158,22 @@ export function AvisPage() {
 
       {/* CTA laisser un avis */}
       <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
-        <p className="text-sm text-gray-600 mb-0.5">Vous avez parcouru 2 840 km sur vos {MY_TIRE}.</p>
-        <p className="text-xs text-gray-400 mb-4">Seuil requis pour laisser un avis : 500 km ✓</p>
+        <p className="text-sm text-gray-600 mb-0.5">Partagez votre expérience sur vos {MY_TIRE}.</p>
+        <p className="text-xs text-gray-400 mb-4">Votre avis aide la communauté.</p>
         <button
           onClick={() => setShowModal(true)}
           className="bg-[#00205B] text-white font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-[#27509B] transition-colors"
         >
-          Laisser un avis vérifié
+          Laisser un avis
         </button>
       </div>
 
-      <ReviewModal open={showModal} onClose={() => setShowModal(false)} tireName={MY_TIRE} />
+      <ReviewModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        tireName={MY_TIRE}
+        onSubmitted={loadReviews}
+      />
     </div>
   );
 }

@@ -70,6 +70,26 @@ export class StravaService {
     return cycling.slice(0, maxActivities);
   }
 
+  /**
+   * Total des kilomètres vélo parcourus depuis `since` (calcul Strava réel).
+   * Réutilisable par le futur Tyre Score.
+   */
+  async kmRiddenSince(user: User, since: Date): Promise<number> {
+    const sinceDays = Math.max(
+      1,
+      Math.ceil((Date.now() - since.getTime()) / 86_400_000),
+    );
+    const activities = await this.getCyclingActivities(user, {
+      sinceDays,
+      maxActivities: 1000,
+    });
+    const sinceMs = since.getTime();
+    const km = activities
+      .filter((a) => new Date(a.startDate).getTime() >= sinceMs)
+      .reduce((sum, a) => sum + a.distanceKm, 0);
+    return Math.round(km);
+  }
+
   /** Récupère une page d'activités brutes. */
   private async fetchPage(
     token: string,
