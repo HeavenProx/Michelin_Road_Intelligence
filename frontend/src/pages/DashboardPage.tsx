@@ -67,7 +67,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-full">
-      {/* Hero dark */}
+      {/* Hero dark ! */}
       <div className="bg-[#00205B] px-4 pt-5 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
@@ -122,7 +122,11 @@ export function DashboardPage() {
               value: String(totalRides),
               unit: "sorties au total",
             },
-            { Icon: Bike, value: `${liveData.profile.monthly_distance }km`, unit: "Distance ce mois" },
+            {
+              Icon: Bike,
+              value: `${liveData.profile.monthly_distance}km`,
+              unit: "Distance ce mois",
+            },
             {
               Icon: TrendingUp,
               value: `${monthlyElevation}m`,
