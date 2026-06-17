@@ -11,11 +11,11 @@ const NAV_ITEMS = [
 ];
 
 export function AppLayout() {
-  const { liveData, loading, connectStrava, logout, alertCount } = useApp();
+  const { liveData, loading, authStatus, connectStrava, logout, alertCount } = useApp();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  if (loading) {
+  if (loading || authStatus === "checking") {
     return (
       <div className="min-h-screen bg-[#00205B] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
