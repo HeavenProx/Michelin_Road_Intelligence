@@ -2,17 +2,20 @@ import { useState } from "react";
 import { AlertTriangle, Bell, CheckCircle, ChevronRight, Star, X } from "lucide-react";
 import { StoreSection } from "@/components/StoreSection";
 import { ReviewModal } from "@/components/ReviewModal";
-import { ALERTS, REVIEW_REMINDERS } from "@/data/demo";
 import { useApp } from "@/context/AppContext";
+import { useAlerts } from "@/hooks/useAlerts";
 
 export function AlertePage() {
   const { wearAlerts, dismissWearAlert } = useApp();
+  const { data: alertsData } = useAlerts();
 
   const [expandedIdx, setExpandedIdx]         = useState<string | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewTire, setReviewTire]           = useState("");
 
   const activeWearAlerts = wearAlerts.filter((a) => !a.dismissed);
+  const alerts           = alertsData?.alerts   ?? [];
+  const reminders        = alertsData?.reminders ?? [];
 
   function openReview(tire: string) {
     setReviewTire(tire);
@@ -91,13 +94,13 @@ export function AlertePage() {
         </div>
       )}
 
-      {/* ── Historique d'alertes (données démo) ── */}
+      {/* ── Historique d'alertes ── */}
       <div>
         <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-gray-400 mb-3">
-          {activeWearAlerts.length > 0 ? "Historique" : "Alertes d'usure"}
+          {activeWearAlerts.length > 0 ? "Historique" : "Alertes d’usure"}
         </p>
         <div className="space-y-3">
-          {ALERTS.map((alert, i) => {
+          {alerts.map((alert, i) => {
             const key      = `demo-${i}`;
             const expanded = expandedIdx === key;
             return (
@@ -137,7 +140,7 @@ export function AlertePage() {
       <div>
         <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-gray-400 mb-3">Rappels avis</p>
         <div className="space-y-3">
-          {REVIEW_REMINDERS.map((r, i) => (
+          {reminders.map((r, i) => (
             <div
               key={i}
               className={`rounded-2xl p-4 flex items-start gap-3 border ${r.done ? "bg-white border-gray-200" : "bg-[#FCE500]/10 border-[#FCE500]/60"}`}

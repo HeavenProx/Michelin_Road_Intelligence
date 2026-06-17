@@ -11,9 +11,12 @@ import { GarageTyre } from './garage/garage-tyre.entity';
 import { GarageModule } from './garage/garage.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileSnapshot } from './profile/profile-snapshot.entity';
+import { AlertsModule } from './alerts/alerts.module';
 import { NotificationModule } from './notification/notification.module';
+import { PeersModule } from './peers/peers.module';
 import { RecommendModule } from './recommend/recommend.module';
 import { StravaModule } from './strava/strava.module';
+import { TyresModule } from './tyres/tyres.module';
 import { TyreModel } from './tyres/tyre-model.entity';
 import { TyreSize } from './tyres/tyre-size.entity';
 import { User } from './users/user.entity';
@@ -47,6 +50,9 @@ import { UsersModule } from './users/users.module';
     NotificationModule,
     AvisModule,
     GarageModule,
+    TyresModule,
+    AlertsModule,
+    PeersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

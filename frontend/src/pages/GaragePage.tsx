@@ -4,11 +4,11 @@ import { ArrowRight, CheckCircle, ChevronRight, AlertTriangle, Star } from "luci
 import { GaugeWear } from "@/components/GaugeWear";
 import { StoreSection } from "@/components/StoreSection";
 import { ReviewModal } from "@/components/ReviewModal";
-import { TIRE_MODELS } from "@/data/demo";
+import { useTyres } from "@/hooks/useTyres";
 
 export function GaragePage() {
   const { triggerWearAlert } = useApp();
-
+  const { data: tireModels, isLoading } = useTyres();
   const [selectedIdx, setSelectedIdx]         = useState(0);
   const [dateInput, setDateInput]             = useState("2025-08-15");
   const [open, setOpen]                       = useState(false);
@@ -16,24 +16,36 @@ export function GaragePage() {
   const [showStores, setShowStores]           = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
-  const model    = TIRE_MODELS[selectedIdx];
+  // Calculé avant l'early return pour pouvoir être utilisé dans useEffect
+  const model    = tireModels?.[selectedIdx];
   const kmUsed   = 3177;
-  const kmMax    = model.km_max;
-  const kmLeft   = Math.max(0, kmMax - kmUsed);
-  const wear     = Math.min(100, Math.round((kmUsed / kmMax) * 100));
+  const kmMax    = model?.km_max ?? 0;
+  const wear     = kmMax > 0 ? Math.min(100, Math.round((kmUsed / kmMax) * 100)) : 0;
   const critical = wear >= 80;
 
   useEffect(() => {
-    if (critical) triggerWearAlert(model.name, wear);
+    if (model && critical) triggerWearAlert(model.name, wear);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [critical, model.name]);
+  }, [critical, model?.name]);
 
-  const cardBg     = critical ? "bg-red-50" : wear >= 55 ? "bg-amber-50" : "bg-green-50";
-  const statusText  = critical ? "À remplacer" : wear >= 55 ? "À surveiller" : "Bon état";
+  if (isLoading || !tireModels || !model) {
+    return (
+      <div className="px-4 py-5 space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Mon pneu</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Chargement du catalogue…</p>
+        </div>
+      </div>
+    );
+  }
+
+  const kmLeft      = Math.max(0, kmMax - kmUsed);
+  const cardBg      = critical ? "bg-red-50"    : wear >= 55 ? "bg-amber-50"    : "bg-green-50";
+  const statusText  = critical ? "À remplacer"  : wear >= 55 ? "À surveiller"   : "Bon état";
   const statusColor = critical ? "text-red-600" : wear >= 55 ? "text-amber-600" : "text-green-700";
 
-  const filtered = TIRE_MODELS.filter((m) =>
-    (m.name + m.category).toLowerCase().includes(query.toLowerCase())
+  const filtered = tireModels.filter((m) =>
+    (m.name + m.category).toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -76,7 +88,7 @@ export function GaragePage() {
               </div>
               <div className="max-h-52 overflow-y-auto divide-y divide-gray-50">
                 {filtered.map((m) => {
-                  const idx = TIRE_MODELS.indexOf(m);
+                  const idx = tireModels.indexOf(m);
                   return (
                     <button
                       key={m.name}
