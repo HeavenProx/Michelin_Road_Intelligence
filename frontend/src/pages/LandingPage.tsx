@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2, Activity, Gauge, ShieldCheck } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export function LandingPage() {
@@ -39,7 +39,7 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#00205B] flex flex-col items-center justify-center font-sans overflow-hidden relative px-6 py-10 sm:py-12">
+    <div className="min-h-screen bg-[#00205B] flex flex-col items-center justify-center font-sans overflow-hidden relative px-6 py-6 sm:py-8">
       {/* Cercles décoratifs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute rounded-full w-[220px] h-[220px] md:w-[600px] md:h-[600px] -left-[110px] md:-left-[300px] blur-md"
@@ -53,27 +53,46 @@ export function LandingPage() {
       </div>
 
       {/* Logo Michelin + titre appli */}
-      <div className="relative z-10 mb-7 sm:mb-8 flex flex-col items-center gap-2.5 sm:gap-3">
-        <img src="/michelin-logo-white.png" alt="Michelin" className="w-48 sm:w-56" />
+      <div className="relative z-10 mb-5 sm:mb-6 flex flex-col items-center gap-2 sm:gap-2.5">
+        <img src="/michelin-logo-white.png" alt="Michelin" className="w-35 sm:w-40" />
         <span className="text-white/55 text-[10px] sm:text-[11px] tracking-[0.28em] uppercase font-semibold">
           Road Intelligence
         </span>
       </div>
 
       {/* Hero text */}
-      <div className="relative z-10 text-center mb-7 sm:mb-8">
-        <h1 className="text-white font-extrabold text-[2.05rem] sm:text-[2.20rem] leading-[1.18] mb-4 sm:mb-5">
-          Vos pneus.<br />
-          Vos données.<br />
-          Votre performance.
+      <div className="relative z-10 text-center mb-5 sm:mb-6">
+        <h1 className="text-white font-extrabold text-[2.05rem] sm:text-[2rem] leading-[1.16] mb-3 sm:mb-4">
+          Vos sorties.<br />
+          Votre terrain.<br />
+          Votre pneu Michelin.
         </h1>
-        <p className="text-white/65 text-[14px] sm:text-[15px] leading-relaxed mx-auto max-w-[22rem]">
-          Connectez votre compte Strava pour obtenir une recommandation personnalisée et suivre l&apos;usure de vos pneus Michelin.
+        <p className="text-white/70 text-[14px] sm:text-[15px] leading-relaxed mx-auto max-w-[23rem]">
+          Chaque sortie en dit long sur vos pneus. À partir de vos données Strava,
+          on vous guide vers le pneu Michelin fait pour vous — et on veille à le
+          changer au bon moment.
         </p>
       </div>
 
+      {/* Comment ça marche — crédibilise la reco */}
+      <div className="relative z-10 w-full max-w-sm mb-5 sm:mb-6 grid grid-cols-3 gap-2">
+        {[
+          { icon: Activity, title: "On vous lit" },
+          { icon: Gauge, title: "On vous matche" },
+          { icon: ShieldCheck, title: "On veille" },
+        ].map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="flex flex-col items-center text-center gap-1.5">
+            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10">
+              <Icon size={17} className="text-[#FCE500]" />
+            </span>
+            <span className="text-white text-[11px] font-bold leading-tight">{title}</span>
+            <span className="text-white/45 text-[10px] leading-snug">{desc}</span>
+          </div>
+        ))}
+      </div>
+
       {/* CTA */}
-      <div className="relative z-10 w-full max-w-sm mb-5 sm:mb-5">
+      <div className="relative z-10 w-full max-w-sm mb-3">
         <button
           onClick={connectStrava}
           className="w-full bg-[#FC4C02] hover:bg-[#e04302] active:scale-[0.98] text-white font-bold py-[14px] sm:py-4 px-6 rounded-2xl flex items-center justify-center gap-3 text-[15px] transition-all shadow-[0_8px_28px_rgba(252,76,2,0.55)]"
@@ -81,13 +100,16 @@ export function LandingPage() {
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0" aria-hidden="true">
             <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169" />
           </svg>
-          Se connecter avec Strava
+          Découvrir mon pneu idéal
         </button>
+        <p className="text-white/45 text-[11px] text-center mt-2.5">
+          Connexion Strava sécurisée · Gratuit · Sans engagement
+        </p>
       </div>
 
-      {/* Legal */}
-      <p className="relative z-10 text-white/35 text-[11px] text-center px-6 leading-relaxed">
-        Données Strava utilisées uniquement pour personnaliser votre expérience. Application non commerciale.
+      {/* Legal / réassurance */}
+      <p className="relative z-10 text-white/35 text-[11px] text-center px-6 leading-relaxed max-w-[24rem]">
+        Accès exclusif à vos actions, pour vos suggestions. Pas de publication sur Strava, pas de données revendues.
       </p>
 
       {/* Accès démo discret pour le jury */}
