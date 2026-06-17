@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AvisModule } from './avis/avis.module';
 import { Review } from './avis/review.entity';
+import { Bike } from './garage/bike.entity';
+import { GarageTyre } from './garage/garage-tyre.entity';
+import { GarageModule } from './garage/garage.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileSnapshot } from './profile/profile-snapshot.entity';
 import { RecommendModule } from './recommend/recommend.module';
@@ -23,7 +26,15 @@ import { UsersModule } from './users/users.module';
       useFactory: (config: ConfigService) => ({
         type: 'better-sqlite3',
         database: config.get<string>('DB_PATH') ?? 'data/michelin.db',
-        entities: [User, TyreModel, TyreSize, ProfileSnapshot, Review],
+        entities: [
+          User,
+          TyreModel,
+          TyreSize,
+          ProfileSnapshot,
+          Review,
+          Bike,
+          GarageTyre,
+        ],
         synchronize: true,
       }),
     }),
@@ -33,6 +44,7 @@ import { UsersModule } from './users/users.module';
     ProfileModule,
     RecommendModule,
     AvisModule,
+    GarageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
