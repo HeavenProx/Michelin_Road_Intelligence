@@ -141,6 +141,66 @@ describe('GarageService.syncBikes', () => {
   });
 });
 
+describe('GarageService.replaceTyre', () => {
+  it("archive l'ancien pneu et monte le nouveau", async () => {
+    const bike = Object.assign(new Bike(), {
+      id: 1,
+      userId: 7,
+      stravaGearId: 'b1',
+    });
+    const old = Object.assign(new GarageTyre(), {
+      id: 10,
+      bikeId: 1,
+      bike,
+      position: 'REAR',
+      status: 'MOUNTED',
+      mountedDate: '2025-01-01',
+      tyreModel: { lifetimeKm: 5000 },
+    });
+    const saved: GarageTyre[] = [];
+    const service = makeService({
+      tyreRepo: {
+        findOne: jest.fn().mockResolvedValue(old),
+        create: jest.fn((d) => Object.assign(new GarageTyre(), d)),
+        save: jest.fn((t) => {
+          saved.push(t as GarageTyre);
+          return Promise.resolve(t);
+        }),
+      },
+      modelRepo: {
+        findOne: jest
+          .fn()
+          .mockResolvedValue({ id: 99, modelName: 'POWER ROAD' }),
+      },
+      strava: {
+        getCyclingActivities: jest.fn().mockResolvedValue([
+          {
+            sportType: 'Ride',
+            distanceKm: 1000,
+            startDate: '2025-03-01T08:00:00Z',
+            trainer: false,
+            manual: false,
+            gearId: 'b1',
+          },
+        ]),
+      },
+    });
+
+    await service.replaceTyre(user, 10, {
+      modelGlobalId: 'g-power-road',
+      mountedDate: '2025-09-01',
+    });
+
+    const archived = saved.find((t) => t.status === 'RETIRED');
+    const mounted = saved.find((t) => t.status === 'MOUNTED');
+    expect(archived?.kmHeld).toBe(1000);
+    expect(archived?.removedDate).toBeTruthy();
+    expect(archived?.durationMonths).toBeGreaterThan(0);
+    expect(mounted?.tyreModelId).toBe(99);
+    expect(mounted?.position).toBe('REAR');
+  });
+});
+
 describe('GarageService.setTyre', () => {
   const dto = {
     bikeId: 1,

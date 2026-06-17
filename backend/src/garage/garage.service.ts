@@ -12,6 +12,7 @@ import type { RiderProfile } from '../profile/profile.types';
 import { computeTyreScore, type TyreScore } from './garage.wear';
 import type { TyrePosition } from './garage-tyre.entity';
 import type { SetTyreDto } from './dto/set-tyre.dto';
+import { ReplaceTyreDto } from './dto/replace-tyre.dto';
 
 export interface TyreDto {
   id: number;
@@ -222,6 +223,65 @@ export class GarageService {
     tyre.tyreModelId = model.id;
     tyre.mountedDate = dto.mountedDate;
     return this.tyreRepo.save(tyre);
+  }
+
+  /** Archive le pneu monté `tyreId` et monte un nouveau pneu à sa place. */
+  async replaceTyre(
+    user: User,
+    tyreId: number,
+    dto: ReplaceTyreDto,
+  ): Promise<GarageTyre> {
+    const old = await this.tyreRepo.findOne({
+      where: { id: tyreId, status: 'MOUNTED' },
+      relations: { bike: true },
+    });
+    if (!old || old.bike.userId !== user.id) {
+      throw new NotFoundException('Pneu monté introuvable.');
+    }
+
+    const model = await this.modelRepo.findOne({
+      where: { globalId: dto.modelGlobalId },
+    });
+    if (!model) throw new NotFoundException('Modèle de pneu introuvable.');
+
+    const now = new Date();
+    const activities = await this.strava.getCyclingActivities(user, {
+      sinceDays: 1000,
+      maxActivities: 1000,
+    });
+    const bikeActivities = activities.filter(
+      (a) => a.gearId === old.bike.stravaGearId,
+    );
+    const score = computeTyreScore(
+      bikeActivities,
+      old.position,
+      old.tyreModel.lifetimeKm,
+      old.mountedDate,
+      now,
+    );
+
+    const removedDate = now.toISOString().slice(0, 10);
+    old.status = 'RETIRED';
+    old.removedDate = removedDate;
+    old.kmHeld = score.kmUsed;
+    old.finalWearPercent = score.wearPercent;
+    old.durationMonths = this.monthsBetween(old.mountedDate, removedDate);
+    await this.tyreRepo.save(old);
+
+    const fresh = this.tyreRepo.create({
+      bikeId: old.bikeId,
+      position: old.position,
+      status: 'MOUNTED',
+      tyreModelId: model.id,
+      mountedDate: dto.mountedDate,
+    });
+    return this.tyreRepo.save(fresh);
+  }
+
+  /** Nombre de mois entiers entre deux dates ISO. */
+  private monthsBetween(fromIso: string, toIso: string): number {
+    const ms = new Date(toIso).getTime() - new Date(fromIso).getTime();
+    return Math.max(0, Math.round(ms / (30.44 * 86_400_000)));
   }
 
   /** Jeu de démonstration (pas d'auth). */
