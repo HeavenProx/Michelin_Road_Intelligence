@@ -38,10 +38,23 @@ export const STORES = [
   { name: "Decathlon Chambéry",       address: "Bd de la Croix-Rouge, Chambéry",       distance: "98 km",   type: "physical" as const, coords: { lat: 45.5731, lng: 5.9159 } },
   // Valence
   { name: "Decathlon Valence",        address: "ZAC de Font Pré, Valence",              distance: "101 km",  type: "physical" as const, coords: { lat: 44.9284, lng: 4.8887 } },
-  // En ligne
-  { name: "Alltricks.fr",             address: "Livraison 24-48h",                      distance: "En ligne", type: "online" as const },
-  { name: "Amazon.fr",                address: "Prime disponible",                       distance: "En ligne", type: "online" as const },
-  { name: "Cdiscount.com",            address: "Livraison gratuite dès 25 €",            distance: "En ligne", type: "online" as const },
+  // En ligne — France (priorité)
+  { name: "Probikeshop",       address: "France",        distance: "En ligne", type: "online" as const, url: "https://www.probikeshop.fr"        },
+  { name: "Alltricks",         address: "France",        distance: "En ligne", type: "online" as const, url: "https://www.alltricks.fr"           },
+  { name: "Matériel-Vélo",     address: "France",        distance: "En ligne", type: "online" as const, url: "https://www.materiel-velo.com"      },
+  // En ligne — Europe
+  { name: "Van Eyck Sports",   address: "Belgique",      distance: "En ligne", type: "online" as const, url: "https://www.vaneycksports.be"       },
+  { name: "FuturumShop",       address: "Pays-Bas",      distance: "En ligne", type: "online" as const, url: "https://www.futurumshop.nl"         },
+  { name: "Bikeinn",           address: "Espagne",       distance: "En ligne", type: "online" as const, url: "https://www.bikeinn.com"            },
+  { name: "Deporvillage",      address: "Espagne",       distance: "En ligne", type: "online" as const, url: "https://www.deporvillage.com"       },
+  { name: "Lord Gun Bicycles", address: "Italie",        distance: "En ligne", type: "online" as const, url: "https://www.lordgunbicycles.com"    },
+  { name: "Bike24",            address: "Allemagne",     distance: "En ligne", type: "online" as const, url: "https://www.bike24.com"             },
+  { name: "Bike-Components",   address: "Allemagne",     distance: "En ligne", type: "online" as const, url: "https://www.bike-components.de"     },
+  { name: "Amazon.de",         address: "Allemagne",     distance: "En ligne", type: "online" as const, url: "https://www.amazon.de"              },
+  { name: "Evans Cycles",      address: "Royaume-Uni",   distance: "En ligne", type: "online" as const, url: "https://www.evanscycles.com"        },
+  { name: "Tredz",             address: "Royaume-Uni",   distance: "En ligne", type: "online" as const, url: "https://www.tredz.co.uk"            },
+  { name: "BikeTart",          address: "Royaume-Uni",   distance: "En ligne", type: "online" as const, url: "https://www.biketart.com"           },
+  { name: "Centrum Rowerowe",  address: "Pologne",       distance: "En ligne", type: "online" as const, url: "https://www.centrumrowerowe.pl"     },
 ];
 
 export const TIRE_MODELS = [
