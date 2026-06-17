@@ -1,13 +1,17 @@
-# Stack de production — Michelin Road Intelligence
+# Stack de production — Michelin Road Intelligence (déployée via Dokploy)
 #
-# Usage sur le serveur :
-#   1. Créer un fichier .env à côté de ce fichier (voir .env.prod.example)
-#   2. Se connecter à ghcr.io :  echo $GHCR_TOKEN | docker login ghcr.io -u <user> --password-stdin
-#   3. Lancer :  docker compose -f docker-compose.prod.yml up -d
+# Dokploy fournit Traefik (reverse-proxy + TLS Let's Encrypt) et le réseau
+# partagé "dokploy-network". On n'expose donc aucun port : c'est Traefik qui
+# route le domaine vers le conteneur frontend.
 #
-# Mise à jour après un nouveau push (nouvelles images sur ghcr.io) :
-#   docker compose -f docker-compose.prod.yml pull
-#   docker compose -f docker-compose.prod.yml up -d
+# Architecture :
+#   Internet ──https──▶ Traefik ──▶ frontend (nginx:80)
+#                                     ├── /        → React statique
+#                                     └── /api,/auth → proxy interne ▶ backend:3001
+#   backend reste sur le réseau "internal" : jamais exposé publiquement.
+#
+# Les variables d'environnement (Strava, SESSION_SECRET, etc.) se renseignent
+# dans l'onglet "Environment" du service Dokploy (qui génère le .env).
 
 services:
   backend:
@@ -20,25 +24,30 @@ services:
     volumes:
       # Persiste la base SQLite hors du conteneur
       - backend-data:/app/data
-    expose:
-      - "3001"
     networks:
-      - michelin
+      - internal
 
   frontend:
     image: ghcr.io/heavenprox/michelin-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       - backend
-    ports:
-      # Le serveur expose l'app sur le port 80 (ou un autre via .env)
-      - "${HTTP_PORT:-80}:80"
     networks:
-      - michelin
+      - internal          # pour parler au backend via nginx proxy
+      - dokploy-network    # pour être routé par Traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # Domaine public (HTTPS)
+      - traefik.http.routers.michelin.rule=Host(`michelin.ageronjoachim.com`)
+      - traefik.http.routers.michelin.entrypoints=websecure
+      - traefik.http.routers.michelin.tls.certresolver=letsencrypt
+      - traefik.http.services.michelin.loadbalancer.server.port=80
 
 volumes:
   backend-data:
 
 networks:
-  michelin:
-    driver: bridge
+  internal:
+  dokploy-network:
+    external: true
