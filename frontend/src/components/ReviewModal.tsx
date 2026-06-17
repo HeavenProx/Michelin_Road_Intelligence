@@ -73,7 +73,7 @@ export function ReviewModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-t-3xl px-5 pt-5 pb-6 mb-16 max-h-[calc(85vh-4rem)] overflow-y-scroll">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl px-5 pt-5 pb-6 mb-16 max-h-[calc(85vh-4rem)] overflow-y-scroll">
         <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
         {done ? (
           <div className="flex flex-col items-center py-8 gap-3">

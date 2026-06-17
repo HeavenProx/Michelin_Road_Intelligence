@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import session from 'express-session';
 import { AppModule } from './app.module';
+import { createSqliteSessionStore } from './session.store';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,11 +24,14 @@ async function bootstrap() {
 
   app.enableCors({ origin: frontendUrl, credentials: true });
 
+  const dbPath = config.get<string>('DB_PATH') ?? 'data/michelin.db';
+
   app.use(
     session({
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
+      store: createSqliteSessionStore(dbPath),
       cookie: {
         httpOnly: true,
         sameSite: 'lax',

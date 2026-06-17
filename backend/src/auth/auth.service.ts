@@ -7,8 +7,12 @@ import type { StravaTokenResponse } from './auth.types';
 const STRAVA_AUTHORIZE_URL = 'https://www.strava.com/oauth/authorize';
 const STRAVA_TOKEN_URL = 'https://www.strava.com/api/v3/oauth/token';
 
-/** Scopes demandés : profil de base + lecture de TOUTES les activités (y compris "Only Me"). */
-const STRAVA_SCOPES = ['read', 'activity:read_all'] as const;
+/** Scopes demandés : profil complet (inclut bikes[]) + toutes activités. */
+const STRAVA_SCOPES = [
+  'read',
+  'profile:read_all',
+  'activity:read_all',
+] as const;
 
 /** Marge avant expiration (s) en-dessous de laquelle on rafraîchit le token de façon préventive. */
 const TOKEN_REFRESH_MARGIN_S = 60;

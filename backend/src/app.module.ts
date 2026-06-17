@@ -19,6 +19,7 @@ import { StravaModule } from './strava/strava.module';
 import { TyresModule } from './tyres/tyres.module';
 import { TyreModel } from './tyres/tyre-model.entity';
 import { TyreSize } from './tyres/tyre-size.entity';
+import { TyresModule } from './tyres/tyres.module';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 

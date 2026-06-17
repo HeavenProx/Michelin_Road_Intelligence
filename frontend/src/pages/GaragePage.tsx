@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { ArrowRight, AlertTriangle, Star, ChevronRight, Bike, CircleDot, CalendarDays, CheckCircle } from "lucide-react";
+import {
+  ArrowRight, AlertTriangle, Star, ChevronRight,
+  Bike, CircleDot, CalendarDays, CheckCircle, RefreshCw, Plus,
+} from "lucide-react";
 import { GaugeWear } from "@/components/GaugeWear";
 import { StoreSection } from "@/components/StoreSection";
 import { ReviewModal } from "@/components/ReviewModal";
+import { TyrePicker } from "@/components/TyrePicker";
 import type { GarageBike, GarageTyre, GarageData } from "@/types";
 
 const BIKE_TYPE_LABEL: Record<string, string> = {
@@ -20,17 +24,12 @@ function reviewedKey(tireName: string, milestone: number) {
 }
 
 function hasReviewedMilestone(tireName: string, milestone: number): boolean {
-  try {
-    return localStorage.getItem(reviewedKey(tireName, milestone)) === "true";
-  } catch {
-    return false;
-  }
+  try { return localStorage.getItem(reviewedKey(tireName, milestone)) === "true"; }
+  catch { return false; }
 }
 
 function markMilestoneReviewed(tireName: string, milestone: number) {
-  try {
-    localStorage.setItem(reviewedKey(tireName, milestone), "true");
-  } catch {}
+  try { localStorage.setItem(reviewedKey(tireName, milestone), "true"); } catch {}
 }
 
 function wearColors(wear: number) {
@@ -42,9 +41,10 @@ function wearColors(wear: number) {
 interface TyreCardProps {
   tyre: GarageTyre;
   onDateChange: (tyreId: number, date: string) => void;
+  onReplace?: () => void;
 }
 
-function TyreCard({ tyre, onDateChange }: TyreCardProps) {
+function TyreCard({ tyre, onDateChange, onReplace }: TyreCardProps) {
   const c = wearColors(tyre.wear_percent);
   const posLabel = tyre.position === "FRONT" ? "Avant" : "Arrière";
 
@@ -96,18 +96,47 @@ function TyreCard({ tyre, onDateChange }: TyreCardProps) {
           {tyre.explanation}
         </p>
       )}
+
+      {onReplace && (
+        <button
+          onClick={onReplace}
+          className="mt-3 pt-3 border-t border-black/8 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-[#27509B] hover:text-[#00205B] transition-colors"
+        >
+          <RefreshCw size={11} />
+          Changer de pneu
+        </button>
+      )}
     </div>
   );
 }
 
-function EmptyTyreSlot({ position }: { position: "FRONT" | "REAR" }) {
+interface EmptyTyreSlotProps {
+  position: "FRONT" | "REAR";
+  onAdd?: () => void;
+}
+
+function EmptyTyreSlot({ position, onAdd }: EmptyTyreSlotProps) {
   const posLabel = position === "FRONT" ? "Avant" : "Arrière";
   return (
-    <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 text-center">
-      <CircleDot size={28} className="text-gray-300" />
+    <button
+      onClick={onAdd}
+      disabled={!onAdd}
+      className={`w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 text-center transition-all ${
+        onAdd
+          ? "hover:border-[#00205B]/40 hover:bg-[#00205B]/5 cursor-pointer"
+          : "cursor-default"
+      }`}
+    >
+      {onAdd
+        ? <Plus size={24} className="text-[#27509B]" />
+        : <CircleDot size={28} className="text-gray-300" />
+      }
       <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400">{posLabel}</p>
-      <p className="text-xs text-gray-400">Aucun pneu enregistré</p>
-    </div>
+      <p className="text-xs text-gray-400">{onAdd ? "Ajouter un pneu Michelin" : "Aucun pneu enregistré"}</p>
+      {onAdd && (
+        <span className="text-xs font-bold text-[#27509B] mt-1">Choisir un modèle →</span>
+      )}
+    </button>
   );
 }
 
@@ -126,6 +155,19 @@ function LoadingSkeleton() {
   );
 }
 
+interface PickerState {
+  open: boolean;
+  bikeId: number;
+  bikeName: string;
+  bikeType: string;
+  position: "FRONT" | "REAR";
+  existingTyreId?: number;
+}
+
+const PICKER_CLOSED: PickerState = {
+  open: false, bikeId: 0, bikeName: "", bikeType: "ROAD", position: "FRONT",
+};
+
 export function GaragePage() {
   const { liveData, triggerWearAlert } = useApp();
 
@@ -135,10 +177,11 @@ export function GaragePage() {
   const [showStores, setShowStores]       = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewDone, setReviewDone]       = useState(false);
+  const [picker, setPicker]               = useState<PickerState>(PICKER_CLOSED);
 
   const isDemo = liveData?.isDemo ?? false;
 
-  useEffect(() => {
+  const loadGarage = useCallback(() => {
     const url = isDemo ? "/api/garage/demo" : "/api/garage";
     setGarageLoading(true);
     fetch(url, { credentials: "include" })
@@ -147,6 +190,8 @@ export function GaragePage() {
       .catch(() => {})
       .finally(() => setGarageLoading(false));
   }, [isDemo]);
+
+  useEffect(() => { loadGarage(); }, [loadGarage]);
 
   useEffect(() => {
     if (!garage) return;
@@ -184,6 +229,25 @@ export function GaragePage() {
     }
   }
 
+  function openPicker(
+    bike: GarageBike,
+    position: "FRONT" | "REAR",
+    existingTyreId?: number,
+  ) {
+    setPicker({
+      open: true,
+      bikeId: bike.id,
+      bikeName: bike.name,
+      bikeType: bike.type,
+      position,
+      existingTyreId,
+    });
+  }
+
+  function handlePickerSuccess() {
+    loadGarage();
+  }
+
   if (garageLoading) return <LoadingSkeleton />;
 
   const bikes: GarageBike[] = garage?.bikes ?? [];
@@ -194,9 +258,9 @@ export function GaragePage() {
   const hasCritical      = activeBike?.tyres.some((t) => t.wear_percent >= 80) ?? false;
   const needsReplacement = activeBike?.tyres.some((t) => t.wear_percent >= 55) ?? false;
 
-  const tyresWithKm = [frontTyre, rearTyre].filter((t): t is GarageTyre => t !== null);
-  const bestTyre    = tyresWithKm.sort((a, b) => b.km_used - a.km_used)[0] ?? null;
-  const kmForReview = bestTyre?.km_used ?? 0;
+  const tyresWithKm  = [frontTyre, rearTyre].filter((t): t is GarageTyre => t !== null);
+  const bestTyre     = tyresWithKm.sort((a, b) => b.km_used - a.km_used)[0] ?? null;
+  const kmForReview  = bestTyre?.km_used ?? 0;
 
   const currentMilestone = [...REVIEW_MILESTONES].reverse().find((m) => m <= kmForReview);
   const nextMilestone    = REVIEW_MILESTONES.find((m) => m > kmForReview);
@@ -276,12 +340,30 @@ export function GaragePage() {
 
           {/* ── Pneus avant / arrière ── */}
           <div className="space-y-4">
-            {frontTyre
-              ? <TyreCard tyre={frontTyre} onDateChange={handleDateChange} />
-              : <EmptyTyreSlot position="FRONT" />}
-            {rearTyre
-              ? <TyreCard tyre={rearTyre}  onDateChange={handleDateChange} />
-              : <EmptyTyreSlot position="REAR" />}
+            {frontTyre ? (
+              <TyreCard
+                tyre={frontTyre}
+                onDateChange={handleDateChange}
+                onReplace={!isDemo && activeBike ? () => openPicker(activeBike, "FRONT", frontTyre.id) : undefined}
+              />
+            ) : (
+              <EmptyTyreSlot
+                position="FRONT"
+                onAdd={!isDemo && activeBike ? () => openPicker(activeBike, "FRONT") : undefined}
+              />
+            )}
+            {rearTyre ? (
+              <TyreCard
+                tyre={rearTyre}
+                onDateChange={handleDateChange}
+                onReplace={!isDemo && activeBike ? () => openPicker(activeBike, "REAR", rearTyre.id) : undefined}
+              />
+            ) : (
+              <EmptyTyreSlot
+                position="REAR"
+                onAdd={!isDemo && activeBike ? () => openPicker(activeBike, "REAR") : undefined}
+              />
+            )}
           </div>
 
           {/* ── Alerte critique ── */}
@@ -378,6 +460,17 @@ export function GaragePage() {
         onClose={() => setShowReviewModal(false)}
         tireName={bestTyre?.model.name ?? ""}
         onSubmitted={handleReviewSubmitted}
+      />
+
+      <TyrePicker
+        open={picker.open}
+        onClose={() => setPicker(PICKER_CLOSED)}
+        bikeId={picker.bikeId}
+        bikeName={picker.bikeName}
+        bikeType={picker.bikeType}
+        position={picker.position}
+        existingTyreId={picker.existingTyreId}
+        onSuccess={handlePickerSuccess}
       />
     </div>
   );

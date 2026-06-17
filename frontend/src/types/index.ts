@@ -93,3 +93,18 @@ export interface GarageData {
   success: true;
   bikes: GarageBike[];
 }
+
+export interface TyreModelOption {
+  globalId: string;
+  name: string;
+  segment: string;
+  useType: string;
+  lifetimeKm: number;
+  priceRange: string;
+  scores: {
+    wetGrip: number;
+    rollingResistance: number;
+    durability: number;
+    terrainVersatility: number;
+  };
+}
