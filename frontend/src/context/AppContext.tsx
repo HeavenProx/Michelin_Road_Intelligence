@@ -1,9 +1,18 @@
-import { createContext, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { LiveData, WearAlert } from "@/types";
+
+/**
+ * État d'authentification réhydraté au démarrage depuis la session backend.
+ * - "checking" : bootstrap en cours, on ne sait pas encore (ne pas afficher la landing).
+ * - "authed"   : session Strava valide côté backend.
+ * - "guest"    : pas de session (ou expirée).
+ */
+type AuthStatus = "checking" | "authed" | "guest";
 
 interface AppContextValue {
   liveData: LiveData | undefined;
   loading: boolean;
+  authStatus: AuthStatus;
   loadLiveData: () => Promise<void>;
   loadDemoData: () => Promise<void>;
   logout: () => Promise<void>;
@@ -25,6 +34,7 @@ function todayLabel(): string {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [liveData, setLiveData]     = useState<LiveData | undefined>(undefined);
   const [loading, setLoading]       = useState(false);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const [wearAlerts, setWearAlerts] = useState<WearAlert[]>([]);
 
   // Ref pour éviter les doubles envois d'email (React strict-mode / re-renders)
@@ -32,7 +42,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const alertCount = wearAlerts.filter((a) => !a.dismissed).length;
 
-  async function fetchFromApi(path: string, isDemo: boolean) {
+  /** Charge les données depuis l'API. Renvoie `true` si la session a répondu `success`. */
+  async function fetchFromApi(path: string, isDemo: boolean): Promise<boolean> {
     setLoading(true);
     try {
       const r = await fetch(path, { credentials: "include" });
@@ -48,16 +59,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
           isDemo,
         });
+        return true;
       }
+      return false;
     } catch {
       // silently fall back to demo data
+      return false;
     } finally {
       setLoading(false);
     }
   }
 
+  // Réhydratation de session au démarrage : on demande au backend si une session
+  // Strava valide existe encore (le cookie reste valable 24 h) avant d'afficher la
+  // landing. Sans ça, chaque reload repartait à "déconnecté" car l'état vit en mémoire.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ok = await fetchFromApi("/api/recommend", false);
+      if (!cancelled) setAuthStatus(ok ? "authed" : "guest");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function loadLiveData() {
-    await fetchFromApi("/api/recommend", false);
+    const ok = await fetchFromApi("/api/recommend", false);
+    setAuthStatus(ok ? "authed" : "guest");
   }
 
   async function loadDemoData() {
@@ -69,6 +98,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await fetch("/auth/logout", { credentials: "include" });
     } catch {}
     setLiveData(undefined);
+    setAuthStatus("guest");
     setWearAlerts([]);
     emailedTires.current.clear();
   }
@@ -106,7 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider
       value={{
-        liveData, loading, loadLiveData, loadDemoData, logout, connectStrava,
+        liveData, loading, authStatus, loadLiveData, loadDemoData, logout, connectStrava,
         wearAlerts, alertCount, triggerWearAlert, dismissWearAlert,
       }}
     >

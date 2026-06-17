@@ -1,25 +1,41 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export function LandingPage() {
-  const { connectStrava, loadDemoData, loadLiveData } = useApp();
+  const { connectStrava, loadDemoData, authStatus } = useApp();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Nettoie le paramètre `?auth=...` laissé par le callback OAuth.
+  // La réhydratation de session (bootstrap dans AppContext) détecte la connexion ;
+  // on n'a plus besoin de relancer le chargement ici.
   useEffect(() => {
-    const authParam = searchParams.get("auth");
-    if (authParam === "success") {
-      setSearchParams({}, { replace: true });
-      loadLiveData().then(() => navigate("/profil", { replace: true }));
-    } else if (authParam === "denied" || authParam === "error") {
+    if (searchParams.get("auth")) {
       setSearchParams({}, { replace: true });
     }
   }, []);
 
+  // Dès qu'une session valide est confirmée, on bascule sur le dashboard.
+  useEffect(() => {
+    if (authStatus === "authed") {
+      navigate("/profil", { replace: true });
+    }
+  }, [authStatus, navigate]);
+
   async function handleLoadDemo() {
     await loadDemoData();
     navigate("/profil");
+  }
+
+  // Pendant la vérification de session, on évite de flasher la landing.
+  if (authStatus === "checking") {
+    return (
+      <div className="min-h-screen bg-[#00205B] flex items-center justify-center">
+        <Loader2 size={32} className="text-[#FCE500] animate-spin" />
+      </div>
+    );
   }
 
   return (
