@@ -77,9 +77,9 @@ export function LandingPage() {
       {/* Comment ça marche — crédibilise la reco */}
       <div className="relative z-10 w-full max-w-sm mb-5 sm:mb-6 grid grid-cols-3 gap-2">
         {[
-          { icon: Activity, title: "On vous lit" },
-          { icon: Gauge, title: "On vous matche" },
-          { icon: ShieldCheck, title: "On veille" },
+          { icon: Activity, title: "On vous lit", desc: "Vos sorties Strava analysées" },
+          { icon: Gauge, title: "On vous matche", desc: "Le pneu taillé pour votre usage" },
+          { icon: ShieldCheck, title: "On veille", desc: "Alerte usure au bon moment" },
         ].map(({ icon: Icon, title, desc }) => (
           <div key={title} className="flex flex-col items-center text-center gap-1.5">
             <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10">
