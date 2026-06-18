@@ -14,16 +14,36 @@
 # dans l'onglet "Environment" du service Dokploy (qui génère le .env).
 
 services:
+  mailpit:
+    image: axllent/mailpit:latest
+    pull_policy: always
+    restart: unless-stopped
+    networks:
+      - internal          # le backend y accède via smtp://mailpit:1025
+      - dokploy-network   # pour exposer l'UI via Traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.mailpit.rule=Host(`${MAILPIT_HOST:-mail.ageronjoachim.com}`)
+      - traefik.http.routers.mailpit.entrypoints=websecure
+      - traefik.http.routers.mailpit.tls.certresolver=letsencrypt
+      - traefik.http.services.mailpit.loadbalancer.server.port=8025
+
   backend:
     image: ghcr.io/heavenprox/michelin-backend:${IMAGE_TAG:-latest}
     # Re-télécharge l'image à chaque déploiement (sinon le :latest en cache
     # est réutilisé et les corrections ne sont jamais prises en compte)
     pull_policy: always
     restart: unless-stopped
+    depends_on:
+      - mailpit
     env_file: .env
     environment:
       NODE_ENV: production
       DB_PATH: /app/data/michelin.db
+      # SMTP → Mailpit (peut être surchargé dans .env pour un vrai provider)
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: "1025"
     volumes:
       # Persiste la base SQLite hors du conteneur
       - backend-data:/app/data
