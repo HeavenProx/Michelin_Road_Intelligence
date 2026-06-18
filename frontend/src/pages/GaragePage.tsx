@@ -326,6 +326,7 @@ export function GaragePage() {
           <div className="space-y-4">
             {frontTyre ? (
               <TyreCard
+                key={frontTyre.id}
                 tyre={frontTyre}
                 onDateChange={handleDateChange}
                 onReplace={!isDemo && activeBike ? () => openPicker(activeBike, "FRONT", frontTyre.id) : undefined}
@@ -334,12 +335,14 @@ export function GaragePage() {
               />
             ) : (
               <EmptyTyreSlot
+                key={`${activeBike?.id}-front-empty`}
                 position="FRONT"
                 onAdd={!isDemo && activeBike ? () => openPicker(activeBike, "FRONT") : undefined}
               />
             )}
             {rearTyre ? (
               <TyreCard
+                key={rearTyre.id}
                 tyre={rearTyre}
                 onDateChange={handleDateChange}
                 onReplace={!isDemo && activeBike ? () => openPicker(activeBike, "REAR", rearTyre.id) : undefined}
@@ -348,6 +351,7 @@ export function GaragePage() {
               />
             ) : (
               <EmptyTyreSlot
+                key={`${activeBike?.id}-rear-empty`}
                 position="REAR"
                 onAdd={!isDemo && activeBike ? () => openPicker(activeBike, "REAR") : undefined}
               />

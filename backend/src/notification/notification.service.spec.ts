@@ -25,7 +25,9 @@ describe('NotificationService', () => {
   beforeEach(() => {
     sendMail = jest.fn().mockResolvedValue({ messageId: 'test-id' });
 
-    mockedCreateTransport.mockReturnValue({ sendMail } as any);
+    mockedCreateTransport.mockReturnValue({ sendMail } as unknown as ReturnType<
+      typeof nodemailer.createTransport
+    >);
   });
 
   afterEach(() => {
