@@ -69,8 +69,8 @@ export function LandingPage() {
         </h1>
         <p className="text-white/70 text-[14px] sm:text-[15px] leading-relaxed mx-auto max-w-[23rem]">
           Chaque sortie en dit long sur vos pneus. À partir de vos données Strava,
-          on vous guide vers le pneu Michelin fait pour vous — et on veille à le
-          changer au bon moment.
+          on vous guide vers le pneu Michelin fait pour vous, et on veille à vous 
+          prévenir de le changer au bon moment.
         </p>
       </div>
 

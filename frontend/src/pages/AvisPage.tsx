@@ -7,27 +7,38 @@ import type { Review } from "@/types";
 
 export function AvisPage() {
   const { liveData } = useApp();
-  const recommendedTire = liveData?.reco.recommended.name ?? "";
-  const alternativeTires = liveData?.reco.alternatives.map((a) => a.name) ?? [];
+  const recommendedTire = liveData?.reco?.recommended.name ?? "";
+  const isDemo = liveData?.isDemo ?? false;
 
   const [filter, setFilter] = useState("Tous");
   const [showFilter, setShowFilter] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
-
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [mountedTyreNames, setMountedTyreNames] = useState<string[]>([]);
 
   const loadReviews = useCallback(() => {
     fetch("/api/reviews", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP error"))))
-      .then((data: Review[]) => {
-        if (Array.isArray(data)) setReviews(data);
-      })
+      .then((data: Review[]) => { if (Array.isArray(data)) setReviews(data); })
       .catch(() => {});
   }, []);
 
+  useEffect(() => { loadReviews(); }, [loadReviews]);
+
   useEffect(() => {
-    loadReviews();
-  }, [loadReviews]);
+    const url = isDemo ? "/api/garage/demo" : "/api/garage";
+    fetch(url, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (!data.success) return;
+        const names: string[] = data.bikes.flatMap(
+          (b: { tyres: { model: { name: string } }[] }) =>
+            b.tyres.map((t) => t.model.name),
+        );
+        setMountedTyreNames([...new Set(names)]);
+      })
+      .catch(() => {});
+  }, [isDemo]);
 
   const tireStats = Array.from(new Set(reviews.map((r) => r.tire))).map(
     (tire) => {
@@ -45,7 +56,7 @@ export function AvisPage() {
       {/* En-tête */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Avis</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Avis de la communauté</h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {filtered.length} avis{filter !== "Tous" && ` · ${filter}`}
           </p>
@@ -88,19 +99,29 @@ export function AvisPage() {
             {reviews.filter((r) => r.tire === recommendedTire).length})
           </button>
         )}
-        {alternativeTires.map((tire) => (
-          <button
-            key={tire}
-            onClick={() => setFilter(tire)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-              filter === tire
-                ? "bg-[#00205B] text-white border-[#00205B]"
-                : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-            }`}
-          >
-            {tire} ({reviews.filter((r) => r.tire === tire).length})
-          </button>
-        ))}
+        {mountedTyreNames.filter((t) => t !== recommendedTire).length > 0 && (
+          <div className="w-full flex items-center gap-2 mt-0.5">
+            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 whitespace-nowrap">
+              Vos pneus
+            </span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+        )}
+        {mountedTyreNames
+          .filter((tire) => tire !== recommendedTire)
+          .map((tire) => (
+            <button
+              key={tire}
+              onClick={() => setFilter(tire)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                filter === tire
+                  ? "bg-[#00205B] text-white border-[#00205B]"
+                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              {tire} ({reviews.filter((r) => r.tire === tire).length})
+            </button>
+          ))}
       </div>
 
       {/* Panneau filtre */}
@@ -181,6 +202,18 @@ export function AvisPage() {
               Les avis des cyclistes apparaîtront ici. Pour partager votre expérience sur un pneu, rendez-vous dans <span className="font-semibold text-gray-600">Mes pneus</span>.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Message filtre vide */}
+      {filtered.length === 0 && filter !== "Tous" && reviews.length > 0 && (
+        <div className="flex flex-col items-center text-center py-8 px-4 gap-3 bg-white border border-gray-100 rounded-2xl">
+          <p className="font-semibold text-gray-700 text-sm">
+            Aucun avis pour <span className="text-[#00205B]">{filter}</span>
+          </p>
+          <p className="text-xs text-gray-400 leading-relaxed max-w-[18rem]">
+            Soyez le premier à partager votre expérience sur ce pneu depuis <span className="font-semibold text-gray-600">Mes pneus</span>.
+          </p>
         </div>
       )}
 

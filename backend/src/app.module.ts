@@ -12,6 +12,7 @@ import { GarageModule } from './garage/garage.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileSnapshot } from './profile/profile-snapshot.entity';
 import { AlertsModule } from './alerts/alerts.module';
+import { ReviewReminder } from './alerts/review-reminder.entity';
 import { NotificationModule } from './notification/notification.module';
 import { PeersModule } from './peers/peers.module';
 import { RecommendModule } from './recommend/recommend.module';
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module';
           Review,
           Bike,
           GarageTyre,
+          ReviewReminder,
         ],
         synchronize: true,
       }),

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Outlet, NavLink, Navigate, useNavigate } from "react-router";
-import { User, Cog, Bell, Star, LogOut, Loader2 } from "lucide-react";
+import { User, Cog, Bell, Star, LogOut } from "lucide-react";
 import { useApp } from "@/context/AppContext";
+import { WheelSpinner } from "@/components/WheelSpinner";
 
 const NAV_ITEMS = [
   { path: "/profil",   label: "Profil",   Icon: User    },
@@ -19,7 +20,7 @@ export function AppLayout() {
     return (
       <div className="min-h-screen bg-[#00205B] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 size={32} className="text-[#FCE500] animate-spin" />
+          <WheelSpinner size={48} className="text-[#FCE500] animate-spin" />
           <p className="text-white/60 text-sm">Analyse de tes activités Strava…</p>
         </div>
       </div>
