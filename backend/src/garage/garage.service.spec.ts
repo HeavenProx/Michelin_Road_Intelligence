@@ -223,7 +223,7 @@ describe('GarageService.getDemoGarage', () => {
     expect(demo.bikes.length).toBeGreaterThan(0);
     expect(demo.bikes[0].tyres.length).toBeGreaterThan(0);
     expect(demo.bikes[0].tyres[0].wear_percent).toBe(21);
-    expect(demo.bikes[0].tyres[1].wear_percent).toBe(40);
+    expect(demo.bikes[0].tyres[1].wear_percent).toBe(71);
   });
 });
 
