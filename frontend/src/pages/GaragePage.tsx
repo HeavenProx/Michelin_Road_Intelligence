@@ -438,6 +438,7 @@ export function GaragePage() {
           <div className="space-y-4">
             {frontTyre ? (
               <TyreCard
+                key={frontTyre.id}
                 tyre={frontTyre}
                 onDateChange={handleDateChange}
                 onReplace={
@@ -452,6 +453,7 @@ export function GaragePage() {
               />
             ) : (
               <EmptyTyreSlot
+                key={`${activeBike?.id}-front-empty`}
                 position="FRONT"
                 onAdd={
                   !isDemo && activeBike
@@ -462,6 +464,7 @@ export function GaragePage() {
             )}
             {rearTyre ? (
               <TyreCard
+                key={rearTyre.id}
                 tyre={rearTyre}
                 onDateChange={handleDateChange}
                 onReplace={
@@ -476,6 +479,7 @@ export function GaragePage() {
               />
             ) : (
               <EmptyTyreSlot
+                key={`${activeBike?.id}-rear-empty`}
                 position="REAR"
                 onAdd={
                   !isDemo && activeBike
