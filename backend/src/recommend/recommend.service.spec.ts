@@ -70,12 +70,8 @@ function makeUser(): User {
 }
 
 function makeRepo(tyres: TyreModel[]): jest.Mocked<Repository<TyreModel>> {
-  const qb = {
-    where: jest.fn().mockReturnThis(),
-    getMany: jest.fn().mockResolvedValue(tyres),
-  };
   return {
-    createQueryBuilder: jest.fn().mockReturnValue(qb),
+    findBy: jest.fn().mockResolvedValue(tyres),
     find: jest.fn().mockResolvedValue(tyres),
   } as unknown as jest.Mocked<Repository<TyreModel>>;
 }
