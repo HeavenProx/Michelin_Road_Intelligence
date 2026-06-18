@@ -134,22 +134,18 @@ export class RecommendService {
     };
   }
 
-  /** Filtre les modèles par discipline, avec fallback sur tout le catalogue. */
+  /** Filtre les modèles par discipline via cycleTypeWeb, avec fallback sur tout le catalogue. */
   private async queryModels(styleLabel: string): Promise<TyreModel[]> {
-    const qb = this.tyreRepo.createQueryBuilder('m');
-
+    let cycleTypeWeb: string;
     if (styleLabel === 'VTT') {
-      qb.where('m.cycleType LIKE :v', { v: '%MTB%' });
+      cycleTypeWeb = 'MTB';
     } else if (styleLabel === 'Gravel') {
-      qb.where('m.cycleTypeWeb LIKE :v', { v: '%GRAVEL%' });
+      cycleTypeWeb = 'GRAVEL';
     } else {
-      qb.where('m.cycleType LIKE :road OR m.cycleType LIKE :route', {
-        road: '%ROAD%',
-        route: '%ROUTE%',
-      });
+      cycleTypeWeb = 'ROAD';
     }
 
-    const filtered = await qb.getMany();
+    const filtered = await this.tyreRepo.findBy({ cycleTypeWeb });
     if (filtered.length >= 3) return filtered;
 
     return this.tyreRepo.find();
@@ -206,39 +202,82 @@ export class RecommendService {
 
   private generateExplanation(profile: RiderProfile, model: TyreModel): string {
     const rain = Math.round(profile.weather_exposure.rain_percentage ?? 0);
-    const terrain =
-      profile.terrain_label !== 'Données insuffisantes'
-        ? profile.terrain_label.toLowerCase()
-        : null;
+    const monthly = Math.round(profile.monthly_distance);
+    const speed = Math.round(profile.avg_speed_kmh);
+    const elevation = Math.round(profile.avg_elevation_m);
+    const style = profile.style_label;
+    const terrain = profile.terrain_label;
+    const hasGoodTerrain = terrain !== 'Données insuffisantes';
+    const parts: string[] = [];
 
-    let intro =
-      rain >= 20
-        ? `Avec ${rain}% de vos sorties sous la pluie`
-        : 'Avec des conditions généralement sèches';
-
-    if (terrain) intro += ` et un profil ${terrain}`;
-    intro += `, le ${model.modelName} est votre allié idéal.`;
-
-    const highlights: string[] = [];
-    if (model.scoreWetGrip >= 4)
-      highlights.push('son excellente accroche par temps mouillé');
-    if (model.scoreRollingResistance >= 4)
-      highlights.push('sa faible résistance au roulement');
-    if (model.scoreDurability >= 4) highlights.push('sa durabilité supérieure');
-    if (model.scoreTerrainVersatility >= 4)
-      highlights.push('sa polyvalence terrain');
-
-    const parts = [intro];
-
-    if (highlights.length > 0) {
-      const h = highlights.slice(0, 2);
-      const hlStr = h.length === 2 ? `${h[0]} et ${h[1]}` : h[0];
-      parts.push(`Profitez de ${hlStr}.`);
+    // ── Accroche personnalisée selon le style ──────────────────────────────
+    if (style === 'Performance') {
+      parts.push(
+        `À ${speed} km/h de moyenne et ${monthly} km par mois, vous avez le profil d'un cycliste qui ne transige pas sur la vitesse.`,
+      );
+    } else if (style === 'Endurance') {
+      parts.push(
+        hasGoodTerrain
+          ? `Vous couvrez ${monthly} km par mois sur des parcours ${terrain.toLowerCase()} : votre sélection priorise la longévité et la régularité.`
+          : `Avec ${monthly} km par mois et ${profile.ride_count} sorties au compteur, votre pratique demande un pneu fiable sur la durée.`,
+      );
+    } else if (style === 'VTT') {
+      parts.push(
+        `Vos sorties tout-terrain avec un dénivelé moyen de ${elevation} m demandent un pneu qui accroche et encaisse sur tous les revêtements.`,
+      );
+    } else if (style === 'Gravel') {
+      parts.push(
+        `Entre route et chemin, votre pratique gravel réclame un pneu polyvalent — le ${model.modelName} est conçu exactement pour cette double exigence.`,
+      );
+    } else {
+      parts.push(
+        `Vous avez ${profile.ride_count} sorties et ${monthly} km mensuels au compteur — votre sélection s'appuie sur l'ensemble de ce profil.`,
+      );
     }
 
-    if (profile.monthly_distance > 300) {
+    // ── Correspondance météo → grip ────────────────────────────────────────
+    if (rain >= 30 && model.scoreWetGrip >= 4) {
       parts.push(
-        `Sa durabilité s'adapte à votre volume de ${Math.round(profile.monthly_distance)} km/mois.`,
+        `${rain}% de vos sorties se déroulent sous la pluie : le ${model.modelName} a été retenu en priorité pour son grip humide, le critère le plus déterminant dans votre cas.`,
+      );
+    } else if (rain >= 15 && model.scoreWetGrip >= 4) {
+      parts.push(
+        `Avec ${rain}% de sorties pluvieuses, son accroche par temps mouillé vous assure une conduite sûre même sur chaussée humide.`,
+      );
+    }
+
+    // ── Correspondance vitesse/style → rolling resistance ─────────────────
+    if (
+      (style === 'Performance' || speed >= 28) &&
+      model.scoreRollingResistance >= 4
+    ) {
+      parts.push(
+        `Sa faible résistance au roulement se traduit directement en watts économisés à chaque sortie — un avantage concret à votre niveau de pratique.`,
+      );
+    }
+
+    // ── Correspondance volume → durabilité ────────────────────────────────
+    if (monthly > 300 && model.scoreDurability >= 4) {
+      parts.push(
+        `Vos ${monthly} km/mois font de la durabilité un critère non négociable : avec une durée de vie estimée à ${model.lifetimeKm.toLocaleString('fr-FR')} km, vous ne changerez pas de pneu toutes les saisons.`,
+      );
+    } else if (monthly > 150 && model.scoreDurability >= 4) {
+      parts.push(
+        `Sa durabilité estimée à ${model.lifetimeKm.toLocaleString('fr-FR')} km correspond bien à votre volume de ${monthly} km/mois.`,
+      );
+    }
+
+    // ── Correspondance terrain montagne → polyvalence ─────────────────────
+    if (terrain === 'Montagne' && model.scoreTerrainVersatility >= 4) {
+      parts.push(
+        `Sur les routes de montagne que vous fréquentez (${elevation} m de dénivelé moyen), sa tenue en virage et son accroche en descente font une vraie différence.`,
+      );
+    }
+
+    // ── Fallback minimal ──────────────────────────────────────────────────
+    if (parts.length === 1) {
+      parts.push(
+        `Le ${model.modelName} correspond à votre usage : fiable, polyvalent, conçu pour les cyclistes qui roulent régulièrement.`,
       );
     }
 
